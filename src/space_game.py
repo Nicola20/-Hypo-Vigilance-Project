@@ -25,7 +25,7 @@ BACKGROUND_SPEED = 5
 pygame.init()
 
 # display a window
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0))
 screen.fill(BLACK)
 
 while PLAYING:
