@@ -13,6 +13,10 @@
 
 import pygame
 import random
+temp = 0
+moveVal = 0
+
+from pygame.constants import JOYAXISMOTION
 
 # colors
 BLACK = (0, 0, 0)
@@ -29,6 +33,10 @@ pygame.init()
 screen = pygame.display.set_mode((0, 0))
 clock = pygame.time.Clock()
 screen.fill(BLACK)
+
+# initialize joysticks
+pygame.joystick.init()
+joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
 # logic for moving stars in background
 width, height = pygame.display.get_surface().get_size()
@@ -61,8 +69,36 @@ for i in range(200):
     stars.append(Star(x_pos, y_pos, BACKGROUND_SPEED))
 
 
+#mapping our range <-1,1> to <0,1>
+def maprange(x):
+    y = (x+1) / 2
+    return y
+    
+
 while PLAYING:
     for event in pygame.event.get():
+
+        #trigger buttons ( range -1 to 1)
+        if event.type == JOYAXISMOTION:
+            #print(event)
+
+            #left trigger pressed
+            if event.axis == 4:
+                if event.value > -1:
+                   temp = event.value
+                   moveVal = maprange(event.value)
+                   #print(temp, "to", moveVal)
+                   print("moved left")
+
+            #right trigger pressed
+            if event.axis == 5:
+                if event.value > -1:
+                   temp = event.value
+                   moveVal = maprange(event.value)
+                   #print(temp, "to", moveVal)
+                   print("moved right")
+                
+
         if event.type == pygame.QUIT:
             PLAYING = False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -77,5 +113,8 @@ while PLAYING:
 
     pygame.display.flip()
     clock.tick(FPS)
+
+    
+    
 
 pygame.quit()
