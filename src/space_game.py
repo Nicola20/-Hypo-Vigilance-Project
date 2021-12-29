@@ -89,6 +89,7 @@ while PLAYING:
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
                    print("moved left")
+                   
 
             #right trigger pressed
             if event.axis == 5:
@@ -97,7 +98,11 @@ while PLAYING:
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
                    print("moved right")
-                
+
+            # to do: implement moving using mapping ---> move according how far is pressed
+            #        but not what we want? 
+            #        move fixed range only through button press + use range/mapping only for bug/evaluation   
+            
 
         if event.type == pygame.QUIT:
             PLAYING = False
@@ -118,3 +123,7 @@ while PLAYING:
     
 
 pygame.quit()
+
+# for evaluating the stress level:
+# could save the button values in array ---> calculating avarage 
+# or display range higher deflection ---> higher stress level 
