@@ -34,6 +34,7 @@ screen = pygame.display.set_mode((0, 0))
 clock = pygame.time.Clock()
 screen.fill(BLACK)
 
+#load images
 #path have to be adapted depending where image is at each
 spaceShip = pygame.image.load('.\src\graphics\spaceCow.png')
 
