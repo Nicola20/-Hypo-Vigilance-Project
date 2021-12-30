@@ -34,6 +34,9 @@ screen = pygame.display.set_mode((0, 0))
 clock = pygame.time.Clock()
 screen.fill(BLACK)
 
+#path have to be adapted depending where image is at each
+spaceShip = pygame.image.load('.\src\graphics\spaceCow.png')
+
 # initialize joysticks
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
@@ -69,6 +72,16 @@ for i in range(200):
     stars.append(Star(x_pos, y_pos, BACKGROUND_SPEED))
 
 
+# spaceship position 
+ship_x = (width * 0.45)
+ship_y = (height * 0.6)
+
+#display spaceship image
+def ship(x,y):
+    screen.blit(spaceShip, (x,y))
+
+
+
 #mapping our range <-1,1> to <0,1>
 def maprange(x):
     y = (x+1) / 2
@@ -88,7 +101,9 @@ while PLAYING:
                    temp = event.value
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
-                   print("moved left")
+                   #move left if button pressed
+                   ship_x -= 4
+                   #print("moved left")
                    
 
             #right trigger pressed
@@ -97,11 +112,13 @@ while PLAYING:
                    temp = event.value
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
-                   print("moved right")
+                   #move right if button pressed
+                   ship_x += 4
+                   #print("moved right")
 
-            # to do: implement moving using mapping ---> move according how far is pressed
-            #        but not what we want? 
-            #        move fixed range only through button press + use range/mapping only for bug/evaluation   
+            # to do: find right movement range 
+            #        fix double movement through multiple values
+            #        use range/mapping for bug/evaluation   
             
 
         if event.type == pygame.QUIT:
@@ -115,6 +132,8 @@ while PLAYING:
         star.draw()
         star.move()
         star.appear_as_new_star()
+
+    ship(ship_x,ship_y)
 
     pygame.display.flip()
     clock.tick(FPS)
