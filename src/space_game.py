@@ -13,6 +13,7 @@
 
 import pygame
 import random
+import os
 temp = 0
 moveVal = 0
 
@@ -36,7 +37,10 @@ screen.fill(BLACK)
 
 #load images
 #path have to be adapted depending where image is at each
-spaceShip = pygame.image.load('.\src\graphics\spaceCow.png')
+base_path = os.path.dirname(__file__)
+spaceship_path = os.path.join(base_path, 'graphics/spaceship_strong_barrier.png')
+spaceShip = pygame.image.load(spaceship_path)
+spaceShip = pygame.transform.scale(spaceShip, (250, 410))
 
 # initialize joysticks
 pygame.joystick.init()
@@ -77,13 +81,13 @@ for i in range(200):
 ship_x = (width * 0.45)
 ship_y = (height * 0.6)
 
-#display spaceship image
+
+# display spaceship image
 def ship(x,y):
     screen.blit(spaceShip, (x,y))
 
 
-
-#mapping our range <-1,1> to <0,1>
+# mapping our range <-1,1> to <0,1>
 def maprange(x):
     y = (x+1) / 2
     return y
@@ -92,11 +96,11 @@ def maprange(x):
 while PLAYING:
     for event in pygame.event.get():
 
-        #trigger buttons ( range -1 to 1)
+        # trigger buttons ( range -1 to 1)
         if event.type == JOYAXISMOTION:
             #print(event)
 
-            #left trigger pressed
+            # left trigger pressed
             if event.axis == 4:
                 if event.value > -1:
                    temp = event.value
@@ -104,7 +108,7 @@ while PLAYING:
                    #print(temp, "to", moveVal)
                    #move left if button pressed
                    ship_x -= 4
-                   #print("moved left")
+                   print("moved left")
                    
 
             #right trigger pressed
@@ -115,11 +119,13 @@ while PLAYING:
                    #print(temp, "to", moveVal)
                    #move right if button pressed
                    ship_x += 4
-                   #print("moved right")
+                   print("moved right")
 
             # to do: find right movement range 
             #        fix double movement through multiple values
-            #        use range/mapping for bug/evaluation   
+            #        use range/mapping for bug/evaluation
+            #        make movement slower, maybe not only moving when button is pressed new but the whole time
+            #       like normal movement
             
 
         if event.type == pygame.QUIT:
