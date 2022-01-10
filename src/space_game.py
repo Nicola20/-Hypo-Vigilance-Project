@@ -106,9 +106,10 @@ while PLAYING:
                    temp = event.value
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
-                   #move left if button pressed
-                   ship_x -= 4
-                   print("moved left")
+                   #move left if button pressed in range                   
+                   if moveVal > 0.0 and moveVal <0.7 : # a bit laggy: have to check values again
+                        ship_x -= 6
+                   #print("moved left")
                    
 
             #right trigger pressed
@@ -117,15 +118,14 @@ while PLAYING:
                    temp = event.value
                    moveVal = maprange(event.value)
                    #print(temp, "to", moveVal)
-                   #move right if button pressed
-                   ship_x += 4
-                   print("moved right")
+                   #move right if button pressed in range
+                   if moveVal > 0.0 and moveVal <0.7 : # a bit laggy: have to check values again
+                        ship_x += 6
+                   #print("moved right")
 
-            # to do: find right movement range 
-            #        fix double movement through multiple values
-            #        use range/mapping for bug/evaluation
-            #        make movement slower, maybe not only moving when button is pressed new but the whole time
-            #       like normal movement
+            # to do: - find right movement range 
+            #        - solve laggy movements
+            #        - maybe add modi for different controllers
             
 
         if event.type == pygame.QUIT:
