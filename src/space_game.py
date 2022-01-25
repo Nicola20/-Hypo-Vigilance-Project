@@ -20,6 +20,8 @@ from pygame.constants import *
 # colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+
+# constants
 BACKGROUND_SPEED = 2
 FPS = 60
 
@@ -38,9 +40,19 @@ WIDTH, HEIGHT = pygame.display.get_surface().get_size()
 
 # load images
 base_path = os.path.dirname(__file__)
-spaceship_path = os.path.join(base_path, 'graphics/spaceship_strong_barrier.png')
-spaceShip = pygame.image.load(spaceship_path)
-spaceShip = pygame.transform.scale(spaceShip, (250, 410))
+spaceship_strong_barrier_path = os.path.join(base_path, 'graphics/spaceship_strong_barrier.png')
+spaceship_strong_barrier_image = pygame.image.load(spaceship_strong_barrier_path)
+spaceship_strong_barrier_image = pygame.transform.scale(spaceship_strong_barrier_image, (250, 410))
+
+spaceship_weak_barrier_path = os.path.join(base_path, 'graphics/spaceship_weak_barrier.png')
+spaceship_weak_barrier_image = pygame.image.load(spaceship_weak_barrier_path)
+spaceship_weak_barrier_image = pygame.transform.scale(spaceship_weak_barrier_image, (250, 410))
+
+spaceship_no_barrier_path = os.path.join(base_path, 'graphics/spaceship_no_barrier.png')
+spaceship_no_barrier_image = pygame.image.load(spaceship_no_barrier_path)
+spaceship_no_barrier_image = pygame.transform.scale(spaceship_no_barrier_image, (250, 410))
+
+
 game_name_path = os.path.join(base_path, 'graphics/game_logo.png')
 game_name = pygame.image.load(game_name_path)
 game_name = pygame.transform.scale(game_name, (850, 320))
@@ -50,22 +62,12 @@ font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
 text_width, text_height = game_font.size('Press X to start new Game')
 
-# spaceship position
-ship_x = (WIDTH * 0.45)
-ship_y = (HEIGHT * 0.6)
-
 tmp = 0
 move_val = 0
-
 
 # initialize joysticks
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
-
-
-# display spaceship image
-def ship(x, y):
-    screen.blit(spaceShip, (x, y))
 
 
 # mapping our range <-1,1> to <0,1>
@@ -74,7 +76,22 @@ def map_range(x):
     return y
 
 
-class Star(object):
+class Spaceship:
+    def __init__(self, x, y, shield, image):
+        self.x_pos = x
+        self.y_pos = y
+        self.shield_status = shield
+        self.image = image
+
+    def move(self, x):
+        self.x_pos += x
+
+    def update_shield_status(self):
+        if 0 <= self.shield_status < 2:
+            self.shield_status += 1
+
+
+class Star:
     def __init__(self, x, y, speed):
         self.radius = 1
         self.x = x
@@ -121,9 +138,8 @@ class GameScreen:
                 if event.button == 0:
                     self.screen = 'game_screen'
 
-
     def game_play(self) -> None:
-        global ship_x, ship_y, playing, tmp, move_val
+        global spaceship, playing, tmp, move_val, level
         # game_status.game_play(ship_x)
         for event in pygame.event.get():
 
@@ -138,7 +154,7 @@ class GameScreen:
                         # print(tmp, "to", move_val)
                         # move left if button pressed in range
                         if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
-                            ship_x -= 6
+                            spaceship.move(-6)
                         # print("moved left")
 
                 # right trigger pressed
@@ -149,7 +165,7 @@ class GameScreen:
                         # print(tmp, "to", move_val)
                         # move right if button pressed in range
                         if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
-                            ship_x += 6
+                            spaceship.move(6)
                         # print("moved right")
 
             if event.type == pygame.QUIT:
@@ -164,8 +180,18 @@ class GameScreen:
             star.move()
             star.appear_as_new_star()
 
-        ship(ship_x, ship_y)
+        screen.blit(spaceship.image, (spaceship.x_pos, spaceship.y_pos))
 
+        counting_time = pygame.time.get_ticks() - start_time
+
+        # change milliseconds into minutes, seconds
+        passed_seconds = (counting_time/1000) % 60
+        passed_minutes = (counting_time/(1000 * 60)) % 60
+
+        timer = "Time: %02d:%02d" % (passed_minutes, passed_seconds)
+
+        timer_display = game_font.render(str(timer), True, WHITE)
+        screen.blit(timer_display, (30, 20))
         pygame.display.update()
 
 
@@ -176,8 +202,10 @@ for i in range(200):
     y_pos = random.randint(1, HEIGHT - 1)
     stars.append(Star(x_pos, y_pos, BACKGROUND_SPEED))
 
-
+level = 1
 game_status = GameScreen()
+spaceship = Spaceship((WIDTH * 0.45), (HEIGHT * 0.6), 2, spaceship_strong_barrier_image)
+start_time = pygame.time.get_ticks()
 
 while playing:
     game_status.screen_manager()
