@@ -65,6 +65,7 @@ text_width, text_height = game_font.size('Press X to start new Game')
 tmp = 0
 move_val = 0
 velocity = 0
+contr = 4
 
 # initialize joysticks
 pygame.joystick.init()
@@ -140,18 +141,30 @@ class GameScreen:
                     self.screen = 'game_screen'
 
     def game_play(self) -> None:
-        global spaceship, playing, tmp, move_val, level, start_time, velocity
+        global spaceship, playing, tmp, move_val, level, start_time, velocity,contr
         counting_time = pygame.time.get_ticks() - start_time
         events = pygame.event.get()
         #print(events)
         # game_status.game_play(ship_x)
         for event in events:
 
+            #for controller modi
+            # Condition becomes true when keyboard is pressed   
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                if contr == 4:
+                    contr = 2
+                    print("Controller_N")
+                else:
+                    contr =4
+                    print("Controller_L")
+
+
             # trigger buttons ( range -1 to 1)
             if event.type == pygame.JOYAXISMOTION:
+                
                 #print(event)
                 # left trigger pressed
-                if event.axis == 4: #2
+                if event.axis == contr: 
                     if event.value > -1:
                         tmp = event.value
                         move_val = map_range(event.value)
