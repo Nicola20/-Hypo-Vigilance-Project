@@ -139,7 +139,9 @@ class GameScreen:
                     self.screen = 'game_screen'
 
     def game_play(self) -> None:
-        global spaceship, playing, tmp, move_val, level
+        global spaceship, playing, tmp, move_val, level, start_time, counting_time
+        counting_time = pygame.time.get_ticks() - start_time
+        prev = 0
         # game_status.game_play(ship_x)
         for event in pygame.event.get():
 
@@ -147,26 +149,31 @@ class GameScreen:
             if event.type == pygame.JOYAXISMOTION:
                 #print(event)
                 # left trigger pressed
-                if event.axis == 2:
+                if event.axis == 4: #2
                     if event.value > -1:
                         tmp = event.value
                         move_val = map_range(event.value)
                         # print(tmp, "to", move_val)
-                        # move left if button pressed in range
-                        if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
-                            spaceship.move(-6)
-                        # print("moved left")
-
+                        #avoid double movements
+                        if counting_time % 5 ==0: 
+                            # move left if button pressed in range
+                            if move_val > 0.0: #and move_val < 0.7:  # a bit laggy: have to check values again
+                                spaceship.move(-6)
+                                prev = move_val
+                            # print("moved left")
+                   
                 # right trigger pressed
                 if event.axis == 5:
                     if event.value > -1:
                         tmp = event.value
                         move_val = map_range(event.value)
                         # print(tmp, "to", move_val)
-                        # move right if button pressed in range
-                        if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
-                            spaceship.move(6)
-                        # print("moved right")
+                       #avoid double movements
+                        if counting_time % 5 ==0: 
+                            # move left if button pressed in range
+                            if move_val > 0.0: #and move_val < 0.7:  # a bit laggy: have to check values again
+                                spaceship.move(6)
+                            # print("moved right")
 
             if event.type == pygame.QUIT:
                 playing = False
@@ -182,7 +189,7 @@ class GameScreen:
 
         screen.blit(spaceship.image, (spaceship.x_pos, spaceship.y_pos))
 
-        counting_time = pygame.time.get_ticks() - start_time
+        
 
         # change milliseconds into minutes, seconds
         passed_seconds = (counting_time/1000) % 60
