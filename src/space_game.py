@@ -159,9 +159,11 @@ class GameScreen:
                         #avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # range is not working
+                            if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
                                 velocity = -6
                                 # print("moved left")
+                            else:
+                                velocity = 0
                     else:
                         velocity = 0
                                 
@@ -176,9 +178,11 @@ class GameScreen:
                        #avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # range is not working
+                            if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
                                 velocity = 6
                                 #print("moved right")
+                            else:
+                                velocity = 0
                     else :
                         velocity = 0
 
