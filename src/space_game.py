@@ -143,7 +143,7 @@ class GameScreen:
         global spaceship, playing, tmp, move_val, level, start_time, velocity
         counting_time = pygame.time.get_ticks() - start_time
         events = pygame.event.get()
-        print(events)
+        #print(events)
         # game_status.game_play(ship_x)
         for event in events:
 
@@ -159,13 +159,13 @@ class GameScreen:
                         #avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
+                            if move_val > 0.0 and move_val < 0.7:  # range is not working
                                 velocity = -6
-                                #spaceship.move(-6)
+                                # print("moved left")
                     else:
                         velocity = 0
                                 
-                            # print("moved left")
+                            
                   
                 # right trigger pressed
                 if event.axis == 5:
@@ -176,10 +176,9 @@ class GameScreen:
                        #avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # a bit laggy: have to check values again
+                            if move_val > 0.0 and move_val < 0.7:  # range is not working
                                 velocity = 6
-                                #spaceship.move(6)
-                            # print("moved right")
+                                #print("moved right")
                     else :
                         velocity = 0
 
