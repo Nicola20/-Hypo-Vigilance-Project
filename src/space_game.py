@@ -22,7 +22,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # constants
-BACKGROUND_SPEED = 2
+# BACKGROUND_SPEED = 2
 FPS = 60
 
 playing = True
@@ -37,21 +37,40 @@ screen.fill(BLACK)
 
 # get width and height of screen
 WIDTH, HEIGHT = pygame.display.get_surface().get_size()
+tmp = 0
+move_val = 0
+velocity = 0
+contr = 4
+game_speed = 5
+level = 1
+score = 0
+
 
 # load images
 base_path = os.path.dirname(__file__)
 spaceship_strong_barrier_path = os.path.join(base_path, 'graphics/spaceship_strong_barrier.png')
 spaceship_strong_barrier_image = pygame.image.load(spaceship_strong_barrier_path)
-spaceship_strong_barrier_image = pygame.transform.scale(spaceship_strong_barrier_image, (250, 410))
+spaceship_strong_barrier_image = pygame.transform.scale(spaceship_strong_barrier_image, (140, 260))
 
 spaceship_weak_barrier_path = os.path.join(base_path, 'graphics/spaceship_weak_barrier.png')
 spaceship_weak_barrier_image = pygame.image.load(spaceship_weak_barrier_path)
-spaceship_weak_barrier_image = pygame.transform.scale(spaceship_weak_barrier_image, (250, 410))
+spaceship_weak_barrier_image = pygame.transform.scale(spaceship_weak_barrier_image, (140, 260))
 
 spaceship_no_barrier_path = os.path.join(base_path, 'graphics/spaceship_no_barrier.png')
 spaceship_no_barrier_image = pygame.image.load(spaceship_no_barrier_path)
-spaceship_no_barrier_image = pygame.transform.scale(spaceship_no_barrier_image, (250, 410))
+spaceship_no_barrier_image = pygame.transform.scale(spaceship_no_barrier_image, (140, 260))
 
+asteroid_path = os.path.join(base_path, 'graphics/asteroid.png')
+asteroid_image = pygame.image.load(asteroid_path)
+asteroid_image = pygame.transform.scale(asteroid_image, (90, 90))
+
+spacecow_path = os.path.join(base_path, 'graphics/spaceCow.png')
+spacecow_image = pygame.image.load(spacecow_path)
+spacecow_image = pygame.transform.scale(spacecow_image, (90, 90))
+
+energy_path = os.path.join(base_path, 'graphics/energy_ball.png')
+energy_image = pygame.image.load(energy_path)
+energy_image = pygame.transform.scale(energy_image, (60, 60))
 
 game_name_path = os.path.join(base_path, 'graphics/game_logo.png')
 game_name = pygame.image.load(game_name_path)
@@ -61,11 +80,6 @@ game_name = pygame.transform.scale(game_name, (850, 320))
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
 text_width, text_height = game_font.size('Press X to start new Game')
-
-tmp = 0
-move_val = 0
-velocity = 0
-contr = 4
 
 # initialize joysticks
 pygame.joystick.init()
@@ -86,6 +100,7 @@ class Spaceship:
         self.image = image
 
     def move(self, x):
+        # TO DO: prevent spaceship from moving out of the window
         self.x_pos += x
 
     def update_shield_status(self):
@@ -110,6 +125,60 @@ class Star:
         if self.y >= HEIGHT:
             self.y = 0
             self.x = random.randint(1, WIDTH - 1)
+
+
+class Asteroid(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = asteroid_image
+        self.surf = pygame.Surface((30, 30))
+        self.rect = self.surf.get_rect(center=(random.randint(40, (WIDTH - 40)), (random.randint((-HEIGHT - 300 ), 0))))
+
+    def move(self, score):
+        self.rect.move_ip(0, game_speed)
+        if self.rect.top > HEIGHT:
+            self.rect.center = (random.randint(30, (WIDTH - 40)), (random.randint((-HEIGHT - 300), 0)))
+            score += 1
+
+        return score
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+class SpaceCow(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = spacecow_image
+        self.surf = pygame.Surface((30, 30))
+        self.rect = self.surf.get_rect(center=(random.randint(40, (WIDTH - 40)), (random.randint((-HEIGHT - 300), 0))))
+
+    def move(self, score):
+        self.rect.move_ip(0, game_speed)
+        if self.rect.top > HEIGHT:
+            self.rect.center = (random.randint(30, (WIDTH - 40)), (random.randint((-HEIGHT - 300), 0)))
+            score += 1
+
+        return score
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+class EnergyBall(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = energy_image
+        self.surf = pygame.Surface((30, 30))
+        self.rect = self.surf.get_rect(center=(random.randint(40, (WIDTH - 40)), (random.randint((-HEIGHT - 300 ), 0))))
+
+    def move(self):
+        self.rect.move_ip(0, game_speed)
+        if self.rect.top > HEIGHT:
+            self.rect.center = (random.randint(30, (WIDTH - 40)), 0)
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 
 class GameScreen:
@@ -155,48 +224,45 @@ class GameScreen:
                     contr = 2
                     print("Controller_N")
                 else:
-                    contr =4
+                    contr = 4
                     print("Controller_L")
-
 
             # trigger buttons ( range -1 to 1)
             if event.type == pygame.JOYAXISMOTION:
                 
-                #print(event)
+                # print(event)
                 # left trigger pressed
                 if event.axis == contr: 
                     if event.value > -1:
                         tmp = event.value
                         move_val = map_range(event.value)
                         # print(tmp, "to", move_val)
-                        #avoid double movements
+                        # avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
                             if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
-                                velocity = -6
+                                velocity = -5
                                 # print("moved left")
                             else:
                                 velocity = 0
                     else:
                         velocity = 0
-                                
-                            
-                  
+
                 # right trigger pressed
                 if event.axis == 5:
                     if event.value > -1:
                         tmp = event.value
                         move_val = map_range(event.value)
                         # print(tmp, "to", move_val)
-                       #avoid double movements
+                       # avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
                             if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
-                                velocity = 6
+                                velocity = 5
                                 #print("moved right")
                             else:
                                 velocity = 0
-                    else :
+                    else:
                         velocity = 0
 
             if event.type == pygame.QUIT:
@@ -210,6 +276,13 @@ class GameScreen:
             star.draw()
             star.move()
             star.appear_as_new_star()
+
+        for enemy in enemyGroup:
+            enemy.draw(screen)
+            enemy.move(score)
+
+        energy.draw(screen)
+        energy.move()
 
         screen.blit(spaceship.image, (spaceship.x_pos, spaceship.y_pos))
 
@@ -232,11 +305,19 @@ stars = []
 for i in range(200):
     x_pos = random.randint(1, WIDTH - 1)
     y_pos = random.randint(1, HEIGHT - 1)
-    stars.append(Star(x_pos, y_pos, BACKGROUND_SPEED))
+    stars.append(Star(x_pos, y_pos, game_speed))
 
-level = 1
+
+enemyGroup = pygame.sprite.Group()
+for i in range(1, 7):
+    enemyGroup.add(Asteroid())
+
+for i in range(0, 1):
+    enemyGroup.add(SpaceCow())
+
+energy = EnergyBall()
 game_status = GameScreen()
-spaceship = Spaceship((WIDTH * 0.45), (HEIGHT * 0.6), 2, spaceship_strong_barrier_image)
+spaceship = Spaceship((WIDTH * 0.45), (HEIGHT * 0.75), 2, spaceship_strong_barrier_image)
 start_time = pygame.time.get_ticks()
 
 while playing:
