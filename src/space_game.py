@@ -20,6 +20,8 @@ from pygame.constants import *
 # colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+NEW_OPPONENT = ['asteroid', 'cow']
+OPPONENT_WEIGHTS = [9, 1]
 
 # constants
 # BACKGROUND_SPEED = 2
@@ -104,11 +106,11 @@ class Spaceship(pygame.sprite.Sprite):
     def __init__(self):
         self.shield_status = 2
         self.image = spaceship_strong_barrier_image
-        self.surf = pygame.Surface((110, 230))
+        self.surf = pygame.Surface((120, 230))
         self.rect = self.surf.get_rect(midbottom=(WIDTH / 2, HEIGHT))
 
     def draw(self):
-        pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
+        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
         screen.blit(self.image, (self.rect.centerx-72, self.rect.centery - 140))
 
     def move(self, x):
@@ -124,13 +126,12 @@ class Spaceship(pygame.sprite.Sprite):
             self.shield_status += 1
 
         if self.shield_status == 0:
-            self.image == spaceship_no_barrier_image
+            self.image = spaceship_no_barrier_image
         elif self.shield_status == 1:
-            self.image == spaceship_weak_barrier_image
+            self.image = spaceship_weak_barrier_image
         elif self.shield_status == 2:
-            self.image == spaceship_strong_barrier_image
+            self.image = spaceship_strong_barrier_image
 
-        print("I am shield " + str(self.shield_status))
         return self.shield_status
 
 
@@ -168,9 +169,9 @@ class Asteroid(pygame.sprite.Sprite):
 
         return score
 
-    def draw(self, surface):
-        pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        surface.blit(self.image, self.rect)
+    def draw(self):
+        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
+        screen.blit(self.image, self.rect)
 
 
 class SpaceCow(pygame.sprite.Sprite):
@@ -188,9 +189,9 @@ class SpaceCow(pygame.sprite.Sprite):
 
         return score
 
-    def draw(self, surface):
-        pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        surface.blit(self.image, self.rect)
+    def draw(self):
+        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
+        screen.blit(self.image, self.rect)
 
 
 class EnergyBall(pygame.sprite.Sprite):
@@ -205,9 +206,12 @@ class EnergyBall(pygame.sprite.Sprite):
         if self.rect.top > HEIGHT:
             self.rect.center = (random.randint(65, (WIDTH - 65)), 0)
 
-    def draw(self, surface):
-        pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        surface.blit(self.image, self.rect)
+    def draw(self):
+        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
+        screen.blit(self.image, self.rect)
+
+    def reset(self):
+        self.rect.center = (random.randint(65, (WIDTH - 65)), 0)
 
 
 def init_enemies():
@@ -263,13 +267,14 @@ class GameScreen:
                 if event.button == 0:
                     self.screen = 'game_screen'
 
-
     def game_play(self) -> None:
-        global spaceship, playing, tmp, move_val, level, start_time, velocity,contr
+        global spaceship, playing, tmp, move_val, level, start_time, velocity, contr, enemy_group, energy
         counting_time = pygame.time.get_ticks() - start_time
         events = pygame.event.get()
+        hit_detected = False
+        hit_type = 'enemy'
         #print(events)
-        # game_status.game_play(ship_x)
+
         for event in events:
             # for controller modi
             # Condition becomes true when keyboard is pressed   
@@ -291,9 +296,10 @@ class GameScreen:
                         move_val = map_range(event.value)
 
                         # avoid double movements
-                        if counting_time % 5 ==0: 
+                        if counting_time % 5 == 0:
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
+                            # range works only if completely new pressed
+                            if move_val > 0.0 and move_val < 0.7:
                                 velocity = -5
                                 # print("moved left")
                             else:
@@ -310,7 +316,8 @@ class GameScreen:
                         # avoid double movements
                         if counting_time % 5 ==0: 
                             # move left if button pressed in range
-                            if move_val > 0.0 and move_val < 0.7:  # range works only if comletely new pressed
+                            # range works only if completely new pressed
+                            if 0.0 < move_val < 0.7:
                                 velocity = 5
                                 # print("moved right")
                             else:
@@ -331,25 +338,40 @@ class GameScreen:
             star.appear_as_new_star()
 
         for enemy in enemy_group:
-            enemy.draw(screen)
+            enemy.draw()
             enemy.move(score)
 
-        energy.draw(screen)
-        energy.move()
+        if pygame.sprite.collide_rect(spaceship, energy):
+            hit_detected = True
+            hit_type = 'energy'
 
-        # move space ship
+        if pygame.sprite.spritecollide(spaceship, enemy_group, True):
+            hit_detected = True
+            hit_type = 'enemy'
+
+        if hit_detected:
+            if hit_type == 'enemy':
+                barrier_status = spaceship.update_shield_status('enemy')
+                # barrier_status = 2
+                if barrier_status < 0:
+                    self.screen = 'game_over'
+                else:
+                    rnd = random.choices(NEW_OPPONENT, OPPONENT_WEIGHTS)
+                    if rnd[0] == 'asteroid':
+                        enemy_group.add(Asteroid())
+                    else:
+                        enemy_group.add(SpaceCow())
+
+            if hit_type == 'energy':
+                energy.reset()
+                '''energy.draw()
+                energy.move()'''
+                barrier_status = spaceship.update_shield_status('energy')
+
+        energy.draw()
+        energy.move()
         spaceship.move(velocity)
         spaceship.draw()
-
-        if pygame.sprite.collide_rect(spaceship, energy):
-            barrier_status = spaceship.update_shield_status('enery')
-
-        if pygame.sprite.spritecollideany(spaceship, enemy_group):
-            # self.screen == 'game_over'
-            print("collision")
-            barrier_status = spaceship.update_shield_status('enemy')
-            if barrier_status < 0:
-                self.screen = 'game_over'
 
         # change milliseconds into minutes, seconds
         passed_seconds = (counting_time/1000) % 60
