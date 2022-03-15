@@ -17,14 +17,12 @@ import os
 from pygame.constants import *
 
 
-# colors
+# constants
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 NEW_OPPONENT = ['asteroid', 'cow']
 OPPONENT_WEIGHTS = [9, 1]
-
-# constants
-# BACKGROUND_SPEED = 2
+BACKGROUND_SPEED = 5
 FPS = 60
 
 playing = True
@@ -43,7 +41,7 @@ tmp = 0
 move_val = 0
 velocity = 0
 contr = 4
-game_speed = 5
+game_speed = 5.5
 level = 1
 score = 0
 
@@ -136,17 +134,17 @@ class Spaceship(pygame.sprite.Sprite):
 
 
 class Star:
-    def __init__(self, x, y, speed):
+    def __init__(self):
         self.radius = random.randint(1, 3)
-        self.x = x
-        self.y = y
-        self.speed = speed
+        self.x = random.randint(1, WIDTH - 1)
+        self.y = random.randint(1, HEIGHT - 1)
+        # self.speed = game_speed
 
     def draw(self):
         pygame.draw.circle(screen, WHITE, (self.x, self.y), self.radius)
 
     def move(self):
-        self.y += self.speed
+        self.y += BACKGROUND_SPEED
 
     def appear_as_new_star(self):
         if self.y >= HEIGHT:
@@ -158,13 +156,13 @@ class Asteroid(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = asteroid_image
-        self.rect = self.image.get_rect(center=(random.randint(95, (WIDTH - 95)),
+        self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
                                                   (random.randint((-HEIGHT - 300), 0))))
 
     def move(self, score):
         self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(95, (WIDTH - 95)), (random.randint((-HEIGHT - 300), 0)))
+            self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
             score += 1
 
         return score
@@ -178,13 +176,13 @@ class SpaceCow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = spacecow_image
-        self.rect = self.image.get_rect(center=(random.randint(95, (WIDTH - 95)),
+        self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
                                                 (random.randint((-HEIGHT - 300), 0))))
 
     def move(self, score):
         self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(95, (WIDTH - 95)), (random.randint((-HEIGHT - 300), 0)))
+            self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
             score += 1
 
         return score
@@ -198,13 +196,13 @@ class EnergyBall(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = energy_image
-        self.rect = self.image.get_rect(center=(random.randint(65, (WIDTH - 65)),
+        self.rect = self.image.get_rect(center=(random.randint(35, (WIDTH - 35)),
                                                (random.randint((-HEIGHT - 300), 0))))
 
     def move(self):
         self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(65, (WIDTH - 65)), 0)
+            self.rect.center = (random.randint(35, (WIDTH - 35)), 0)
 
     def draw(self):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
@@ -235,18 +233,28 @@ class GameScreen:
     def __init__(self):
         self.screen = 'intro'
 
-    def screen_manager(self):
+    def screen_manager(self, speed):
         global energy, spaceship, start_time, enemy_group
         if self.screen == 'intro':
             energy = EnergyBall()
             spaceship = Spaceship()
             enemy_group = init_enemies()
             start_time = pygame.time.get_ticks()
+            coll = True
+
+            while coll:
+                if pygame.sprite.spritecollideany(energy, enemy_group):
+                    energy = EnergyBall()
+                else:
+                    coll = False
+
             self.intro_screen()
         elif self.screen == 'game_screen':
-            self.game_play()
+            self.game_play(speed)
         elif self.screen == 'game_over':
             self.game_over()
+        elif self.screen == 'game_finished':
+            self.game_finished()
 
     def intro_screen(self) -> None:
         global playing
@@ -267,12 +275,15 @@ class GameScreen:
                 if event.button == 0:
                     self.screen = 'game_screen'
 
-    def game_play(self) -> None:
-        global spaceship, playing, tmp, move_val, level, start_time, velocity, contr, enemy_group, energy
+    def game_play(self, speed) -> None:
+        global spaceship, playing, tmp, move_val, level, start_time, velocity,\
+            contr, enemy_group, energy, game_speed
+
         counting_time = pygame.time.get_ticks() - start_time
         events = pygame.event.get()
         hit_detected = False
         hit_type = 'enemy'
+        coll = True
         #print(events)
 
         for event in events:
@@ -325,6 +336,14 @@ class GameScreen:
                     else:
                         velocity = 0
 
+            if event.type == INCREASE_SPEED:
+                if game_speed < 12:
+                    game_speed = round(game_speed + 0.1, 1)
+                print("I am speed " + str(game_speed))
+
+            if event.type == GAME_COMPLETED:
+                self.screen = 'game_finished'
+
             if event.type == pygame.QUIT:
                 playing = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -351,8 +370,8 @@ class GameScreen:
 
         if hit_detected:
             if hit_type == 'enemy':
-                barrier_status = spaceship.update_shield_status('enemy')
-                # barrier_status = 2
+                # barrier_status = spaceship.update_shield_status('enemy')
+                barrier_status = 2
                 if barrier_status < 0:
                     self.screen = 'game_over'
                 else:
@@ -364,8 +383,14 @@ class GameScreen:
 
             if hit_type == 'energy':
                 energy.reset()
-                '''energy.draw()
-                energy.move()'''
+                while coll:
+                    #print("Blello")
+                    if pygame.sprite.spritecollideany(energy, enemy_group):
+                        #print("I am hit in energy with enemy")
+                        energy = EnergyBall()
+                    else:
+                        # print("I was called no collision")
+                        coll = False
                 barrier_status = spaceship.update_shield_status('energy')
 
         energy.draw()
@@ -402,18 +427,46 @@ class GameScreen:
                 if event.button == 0:
                     self.screen = 'intro'
 
+    def game_finished(self) -> None:
+        global playing
+
+        screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 450))
+        text = game_font.render('Press X to continue', True, WHITE)
+        screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                playing = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                playing = False
+            if event.type == pygame.JOYBUTTONDOWN:
+                # print(event, flush=True)
+                if event.button == 0:
+                    self.screen = 'intro'
+
 
 game_status = GameScreen()
 
 stars = []
 for i in range(200):
-    x_pos = random.randint(1, WIDTH - 1)
-    y_pos = random.randint(1, HEIGHT - 1)
-    stars.append(Star(x_pos, y_pos, game_speed))
+    stars.append(Star())
+
+INCREASE_SPEED = pygame.USEREVENT + 1
+pygame.time.set_timer(INCREASE_SPEED, 12000)
+
+# add new enemies whenever a new level starts - every 3 minutes
+INCREASE_ENEMIES = pygame.USEREVENT + 2
+pygame.time.set_timer(INCREASE_ENEMIES, 180000)
+
+# end the game after 15 minutes
+GAME_COMPLETED = pygame.USEREVENT + 3
+pygame.time.set_timer(GAME_COMPLETED, 900000)
 
 
 while playing:
-    game_status.screen_manager()
+    game_status.screen_manager(INCREASE_SPEED)
     clock.tick(FPS)
 
 pygame.quit()
