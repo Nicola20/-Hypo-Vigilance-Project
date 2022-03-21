@@ -14,6 +14,9 @@
 import pygame
 import random
 import os
+import numpy as np
+import matplotlib.pyplot as plt
+
 from pygame.constants import *
 
 
@@ -191,6 +194,27 @@ class SpaceCow(pygame.sprite.Sprite):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
         screen.blit(self.image, self.rect)
 
+class Barplot():
+    data = move_val 
+    barLable = 'key pressure'
+    
+    if move_val > 0.6:
+        color_tmp = 'red'
+    elif 0.4 < move_val < 0.7:
+        color_tmp = 'yellow'
+    else:
+        color_tmp = 'green'
+
+    fig = plt.figure(figsize = (10, 5)) 
+
+    plt.bar(barLable, data, color = color_tmp,
+        width = 0.4) 
+    
+    plt.ylabel("key pressure")
+
+    def draw(self):
+        plt.show()
+    # dynamic animation missing 
 
 class EnergyBall(pygame.sprite.Sprite):
     def __init__(self):
@@ -398,6 +422,7 @@ class GameScreen:
         spaceship.move(velocity)
         spaceship.draw()
 
+         
         # change milliseconds into minutes, seconds
         passed_seconds = (counting_time/1000) % 60
         passed_minutes = (counting_time/(1000 * 60)) % 60
