@@ -214,6 +214,7 @@ class Barplot():
         #heigt changes according pressure
         height = move_val * 200
 
+        #for addapting center of rect
         center = move_val * 200
 
         pygame.draw.rect(screen, color_tmp, pygame.Rect(WIDTH-100, HEIGHT-(40+center), 40, height))
