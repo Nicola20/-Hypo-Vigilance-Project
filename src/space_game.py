@@ -47,6 +47,9 @@ contr = 4
 game_speed = 5.5
 level = 1
 score = 0
+colorBord = (131,139,139)
+color_tmp = (124,252,0)
+height = 0
 
 
 # load images
@@ -195,26 +198,29 @@ class SpaceCow(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 class Barplot():
-    data = move_val 
-    barLable = 'key pressure'
-    
-    if move_val > 0.6:
-        color_tmp = 'red'
-    elif 0.4 < move_val < 0.7:
-        color_tmp = 'yellow'
-    else:
-        color_tmp = 'green'
-
-    fig = plt.figure(figsize = (10, 5)) 
-
-    plt.bar(barLable, data, color = color_tmp,
-        width = 0.4) 
-    
-    plt.ylabel("key pressure")
 
     def draw(self):
-        plt.show()
-    # dynamic animation missing 
+        #color changing according pressure
+        if move_val > 0.6:
+            #red
+            color_tmp = (255,0,0)
+        elif 0.4 < move_val < 0.7:
+            #yellow
+            color_tmp = (255,255,0)
+        else:
+            #green
+            color_tmp = (124,252,0)
+
+        #heigt changes according pressure
+        height = move_val * 200
+
+        center = move_val * 200
+
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(WIDTH-100, HEIGHT-(40+center), 40, height))
+        pygame.draw.rect(screen, colorBord, pygame.Rect(WIDTH-100, HEIGHT-240, 40, 200),  2)
+
+
+    
 
 class EnergyBall(pygame.sprite.Sprite):
     def __init__(self):
@@ -301,7 +307,7 @@ class GameScreen:
 
     def game_play(self, speed) -> None:
         global spaceship, playing, tmp, move_val, level, start_time, velocity,\
-            contr, enemy_group, energy, game_speed
+            contr, enemy_group, energy, game_speed, colorBord, color_tmp
 
         counting_time = pygame.time.get_ticks() - start_time
         events = pygame.event.get()
@@ -421,6 +427,8 @@ class GameScreen:
         energy.move()
         spaceship.move(velocity)
         spaceship.draw()
+        Barplot.draw(self)
+        
 
          
         # change milliseconds into minutes, seconds
