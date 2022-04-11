@@ -245,8 +245,16 @@ class Barplot():
         #for addapting center of rect
         center = move_val * 200
 
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(WIDTH-100, HEIGHT-(40+center), 40, height))
-        pygame.draw.rect(screen, colorBord, pygame.Rect(WIDTH-100, HEIGHT-240, 40, 200),  2)
+        #filling rect
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(WIDTH-100, HEIGHT-(620+center), 40, height))
+
+        #border rect
+        pygame.draw.rect(screen, colorBord, pygame.Rect(WIDTH-100, HEIGHT-820, 40, 200),  2)
+
+        # for label
+        font = pygame.font.SysFont(None, 30)
+        img = font.render('pressure', True, WHITE)
+        screen.blit(img, (WIDTH-121, HEIGHT-615))
 
 
 class EnergyBall(pygame.sprite.Sprite):
