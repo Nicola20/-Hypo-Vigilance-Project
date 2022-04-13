@@ -225,7 +225,7 @@ class SpaceCow(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 
-class Barplot():
+class Barplot:
 
     def draw(self):
         #color changing according pressure
@@ -261,17 +261,19 @@ class EnergyBall(pygame.sprite.Sprite):
         if self.fall:
             self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(35, (WIDTH - 35)), 0)
+            self.rect.center = (random.randint(35, (WIDTH - 35)), -40)
+            self.fall = False
 
     def draw(self):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
         screen.blit(self.image, self.rect)
 
     def reset(self):
-        self.rect.center = (random.randint(65, (WIDTH - 65)), 0)
+        self.fall = False
+        self.rect.center = (random.randint(35, (WIDTH - 35)), -40)
 
-    def allow_movements(self, permission):
-        self.fall = permission
+    def allow_movements(self):
+        self.fall = True
 
 
 def init_enemies():
@@ -401,16 +403,19 @@ class GameScreen:
             if event.type == INCREASE_SPEED:
                 if game_speed < 12:
                     game_speed = round(game_speed + 0.1, 1)
-                print("I am speed " + str(game_speed))
+                #print("I am speed " + str(game_speed))
 
             if event.type == INCREASE_LEVEL:
+                # print("I am level" + str(level))
                 level += 1
-                if level == 6:
-                    self.screen = 'game_finished'
-                # else:
-                # this is a comment call here increase enemies
+                if level != 6:
+                    # reset the timer for the energy balls to control the number of spawned energy per level
+                    pygame.time.set_timer(SPAWN_ENERGY,
+                                          int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
+                # TO-DO: call here increase enemies
 
-            # if event.type == SPAWN_ENERGY:
+            if event.type == SPAWN_ENERGY:
+                energy.allow_movements()
 
             if event.type == pygame.QUIT:
                 playing = False
@@ -472,6 +477,8 @@ class GameScreen:
         passed_minutes = (counting_time/(1000 * 60)) % 60
 
         timer = "Time: %02d:%02d" % (passed_minutes, passed_seconds)
+        if counting_time >= 900000:
+            self.screen = 'game_finished'
 
         timer_display = game_font.render(str(timer), True, WHITE)
         screen.blit(timer_display, (30, 20))
@@ -531,7 +538,9 @@ pygame.time.set_timer(INCREASE_LEVEL, 180000)
 
 # spawn energy balls regularly with a random time offset
 SPAWN_ENERGY = pygame.USEREVENT + 3
-pygame.time.set_timer(SPAWN_ENERGY, 150000 + random.randint(-15000, 15000))
+# init the time depending on the level. In the first level, 5 energyballs should appear, in the 2nd level 4...
+# Also create a little random offset to make it a little less predictable
+pygame.time.set_timer(SPAWN_ENERGY, int((150000/(5 - level + 1))) + random.randint(-11000, 11000))
 
 while playing:
     game_status.screen_manager(INCREASE_SPEED)
