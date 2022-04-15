@@ -51,6 +51,7 @@ score = 0
 colorBord = (131, 139, 139)
 color_tmp = (124, 252, 0)
 height = 0
+passed_time = 0
 
 # load images
 base_path = os.path.dirname(__file__)
@@ -192,13 +193,10 @@ class Asteroid(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
                                                   (random.randint((-HEIGHT - 300), 0))))
 
-    def move(self, score):
+    def move(self):
         self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
             self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
-            score += 1
-
-        return score
 
     def draw(self):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
@@ -212,13 +210,10 @@ class SpaceCow(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
                                                 (random.randint((-HEIGHT - 300), 0))))
 
-    def move(self, score):
+    def move(self):
         self.rect.move_ip(0, game_speed)
         if self.rect.top > HEIGHT:
             self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
-            score += 1
-
-        return score
 
     def draw(self):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
@@ -297,7 +292,6 @@ def init_enemies():
 
 energy = EnergyBall()
 spaceship = Spaceship()
-start_time = pygame.time.get_ticks()
 enemy_group = init_enemies()
 
 
@@ -306,12 +300,12 @@ class GameScreen:
         self.screen = 'intro'
 
     def screen_manager(self, speed):
-        global energy, spaceship, start_time, enemy_group
+        global energy, spaceship, enemy_group
         if self.screen == 'intro':
             energy = EnergyBall()
             spaceship = Spaceship()
             enemy_group = init_enemies()
-            start_time = pygame.time.get_ticks()
+            #start_time = pygame.time.get_ticks()
             coll = True
 
             while coll:
@@ -348,15 +342,13 @@ class GameScreen:
                     self.screen = 'game_screen'
 
     def game_play(self, speed) -> None:
-        global spaceship, playing, tmp, move_val, level, start_time, velocity,\
-            contr, enemy_group, energy, game_speed, colorBord, color_tmp, level
-
-        counting_time = pygame.time.get_ticks() - start_time
+        global spaceship, playing, tmp, move_val, level, velocity,\
+            contr, enemy_group, energy, game_speed, colorBord, color_tmp, level, \
+            score, passed_time
         events = pygame.event.get()
         hit_detected = False
         hit_type = 'enemy'
         coll = True
-        #print(events)
 
         for event in events:
             # for controller modi
@@ -365,7 +357,7 @@ class GameScreen:
                 if contr == 4:
                     contr = 2
                     # print("Controller_N")
-                else:
+                else: # really needed ?
                     contr = 4
                     # print("Controller_L")
 
@@ -379,7 +371,7 @@ class GameScreen:
                         move_val = map_range(event.value)
 
                         # avoid double movements
-                        if counting_time % 5 == 0:
+                        if passed_time % 5 == 0:
                             # move left if button pressed in range
                             # range works only if completely new pressed
                             if move_val > 0.0 and move_val < 0.7:
@@ -397,7 +389,7 @@ class GameScreen:
                         move_val = map_range(event.value)
 
                         # avoid double movements
-                        if counting_time % 5 ==0: 
+                        if passed_time % 5 == 0:
                             # move left if button pressed in range
                             # works only if completely new pressed
                             if 0.0 < move_val < 0.7:
@@ -413,14 +405,29 @@ class GameScreen:
                     game_speed = round(game_speed + 0.1, 1)
                 #print("I am speed " + str(game_speed))
 
-            if event.type == INCREASE_LEVEL:
-                # print("I am level" + str(level))
-                level += 1
-                if level != 6:
-                    # reset the timer for the energy balls to control the number of spawned energy per level
-                    pygame.time.set_timer(SPAWN_ENERGY,
-                                          int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
-                # TO-DO: call here increase enemies
+            if event.type == INCREASE_TIME:
+                passed_time += 1
+                passed_seconds = (passed_time / 1000) % 60
+                passed_minutes = (passed_time / (1000 * 60)) % 60
+
+                if passed_time >= 900000:
+                    self.screen = 'game_finished'
+
+                # increase the score every 3 seconds
+                if passed_seconds % 3 == 0:
+                    score += 1
+
+                # increase the level every 3 minutes
+                if passed_minutes % 3 == 0:
+                    level += 1
+                    if level != 6:
+                        # reset the timer for the energy balls to control the number of spawned energy per level
+                        pygame.time.set_timer(SPAWN_ENERGY,
+                                              int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
+
+                        # increase the enemies
+                        # update the level symbol
+                        # compute the extra points
 
             if event.type == SPAWN_ENERGY:
                 energy.allow_movements()
@@ -439,7 +446,7 @@ class GameScreen:
 
         for enemy in enemy_group:
             enemy.draw()
-            enemy.move(score)
+            enemy.move()
 
         if pygame.sprite.collide_rect(spaceship, energy):
             hit_detected = True
@@ -465,12 +472,9 @@ class GameScreen:
             if hit_type == 'energy':
                 energy.reset()
                 while coll:
-                    #print("Blello")
                     if pygame.sprite.spritecollideany(energy, enemy_group):
-                        #print("I am hit in energy with enemy")
                         energy = EnergyBall()
                     else:
-                        # print("I was called no collision")
                         coll = False
                 barrier_status = spaceship.update_shield_status('energy')
 
@@ -481,15 +485,15 @@ class GameScreen:
         Barplot.draw(self)
 
         # change milliseconds into minutes, seconds
-        passed_seconds = (counting_time/1000) % 60
-        passed_minutes = (counting_time/(1000 * 60)) % 60
+        passed_seconds = (passed_time/1000) % 60
+        passed_minutes = (passed_time/(1000 * 60)) % 60
 
         timer = "Time: %02d:%02d" % (passed_minutes, passed_seconds)
-        if counting_time >= 900000:
-            self.screen = 'game_finished'
-
         timer_display = game_font.render(str(timer), True, WHITE)
         screen.blit(timer_display, (30, 20))
+        score_str = "Score: " + str(score)
+        score_display = game_font.render(score_str, True, WHITE)
+        screen.blit(score_display, (400, 20))
         pygame.display.update()
 
     def game_over(self) -> None:
@@ -540,9 +544,8 @@ for i in range(200):
 INCREASE_SPEED = pygame.USEREVENT + 1
 pygame.time.set_timer(INCREASE_SPEED, 12000)
 
-# add new enemies whenever a new level starts - every 3 minutes
-INCREASE_LEVEL = pygame.USEREVENT + 2
-pygame.time.set_timer(INCREASE_LEVEL, 180000)
+INCREASE_TIME = pygame.USEREVENT + 4
+pygame.time.set_timer(INCREASE_TIME, 1)
 
 # spawn energy balls regularly with a random time offset
 SPAWN_ENERGY = pygame.USEREVENT + 3
