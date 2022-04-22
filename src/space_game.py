@@ -14,8 +14,9 @@
 import pygame
 import random
 import os
-import numpy as np
-import matplotlib.pyplot as plt
+#import numpy as np
+#import matplotlib.pyplot as plt
+from pygame import mixer
 
 from pygame.constants import *
 
@@ -122,6 +123,9 @@ game_over = pygame.transform.scale(game_over, (850, 320))
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
 text_width, text_height = game_font.size('Press X to start new Game')
+
+#load sound and background music
+intro_path = os.path.join(base_path, 'sounds/intro.wav')
 
 # initialize joysticks
 pygame.joystick.init()
@@ -328,6 +332,10 @@ class GameScreen:
         screen.blit(game_name, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 450))
         text = game_font.render('Press X to start new Game', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
+        #background sound
+        #mixer.music.load(intro_path)
+        #print("music loaded")
+        #mixer.music.play(-1)
 
         pygame.display.flip()
 
@@ -521,6 +529,8 @@ class GameScreen:
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 450))
         text = game_font.render('Press X to continue', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
+
+        
 
         pygame.display.flip()
 
