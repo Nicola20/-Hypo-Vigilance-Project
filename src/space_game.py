@@ -28,6 +28,7 @@ OPPONENT_WEIGHTS = [20, 1]
 BACKGROUND_SPEED = 5
 FPS = 60
 NUM_OF_LEVELS = 5
+MAX_PRESSURE = 0.7
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
 
@@ -43,7 +44,6 @@ screen.fill(BLACK)
 
 # get width and height of screen
 WIDTH, HEIGHT = pygame.display.get_surface().get_size()
-tmp = 0
 move_val = 0
 velocity = 0
 contr = 4
@@ -55,6 +55,7 @@ colorBord = (131, 139, 139)
 color_tmp = (124, 252, 0)
 height = 0
 passed_time = 0
+already_moved = False
 
 # load fonts for text
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
@@ -200,7 +201,7 @@ class Barplot:
         # color changing according pressure
         if move_val > 0.6:
             color_tmp = (255, 0, 0)  # red
-        elif 0.4 < move_val < 0.7:
+        elif 0.4 < move_val < MAX_PRESSURE:
             color_tmp = (255, 255, 0)  # yellow
         else:
             color_tmp = (124, 252, 0)  # green
@@ -277,10 +278,10 @@ def redraw_text():
     screen.blit(timer_display, (30, 20))
     score_str = "Score: " + str(score)
     score_display = in_level_font.render(score_str, True, WHITE)
-    screen.blit(score_display, (260, 20))
+    screen.blit(score_display, (490, 20))
     level_display = in_level_font.render("Level: " + str(level), True, WHITE)
-    screen.blit(level_display, (440, 20))
-    screen.blit(level_licence, (560, 15))
+    screen.blit(level_display, (260, 20))
+    screen.blit(level_licence, (380, 15))
     pygame.display.update()
 
 
@@ -359,9 +360,9 @@ class GameScreen:
                     self.screen = 'game_screen'
 
     def game_play(self) -> None:
-        global spaceship, playing, tmp, move_val, level, velocity,\
+        global spaceship, playing, move_val, level, velocity,\
             contr, enemy_group, energy, game_speed, colorBord, color_tmp, level, \
-            score, passed_time, level_licence
+            score, passed_time, level_licence, t0, already_moved
         events = pygame.event.get()
         hit_detected = False
         hit_type = 'enemy'
@@ -376,42 +377,33 @@ class GameScreen:
 
             # trigger buttons ( range -1 to 1)
             if event.type == pygame.JOYAXISMOTION:
+                already_moved = True
                 # left trigger pressed
                 if event.axis == contr: 
                     if event.value > -1:
-                        tmp = event.value
                         move_val = map_range(event.value)
-
-                        # avoid double movements
-                        if passed_time % 1 == 0:
-                            # move left if button pressed in range
-                            # works only if completely new pressed
-                            if 0.0 < move_val < 0.7:
-                                velocity = -5
-                                # print("moved left")
-                            else:
-                                velocity = 0
+                        velocity = -5
                     else:
                         velocity = 0
 
                 # right trigger pressed
                 if event.axis == 5:
                     if event.value > -1:
-                        tmp = event.value
                         move_val = map_range(event.value)
-
-                        # avoid double movements
-                        if passed_time % 1 == 0:
-                            # move left if button pressed in range
-                            # works only if completely new pressed
-                            if 0.0 < move_val < 0.7:
-                                velocity = 5
-                                # print("moved right")
-                            else:
-                                velocity = 0
+                        velocity = 5
                     else:
                         velocity = 0
 
+            # logic to decrease and increase the speed level
+            t1 = time.time()
+            if 0.0 < move_val < MAX_PRESSURE:
+                if (t1 - t0) >= 5:
+                    spaceship.update_speed_status('up')
+                    t0 = time.time()
+            elif already_moved and move_val >= MAX_PRESSURE:
+                if (t1 - t0) >= 0.9:
+                    spaceship.update_speed_status('down')
+                    t0 = time.time()
 
             if event.type == INCREASE_SPEED:
                 if game_speed < 12:
@@ -442,11 +434,7 @@ class GameScreen:
                         level_licence = LEVEL_LICENCE_LIST[level - 1]
 
                     extra = 100 * level * spaceship.get_shield_status()
-                    for i in range(extra):
-                        score += 1
-                        redraw_objects(self)
-                        redraw_text()
-                        # pygame.time.delay(2)
+                    score += extra
 
                 if passed_time >= 900000:
                     self.screen = 'game_finished'
@@ -471,8 +459,8 @@ class GameScreen:
 
         if hit_detected:
             if hit_type == 'enemy':
-                barrier_status = spaceship.update_shield_status('enemy')
-                # barrier_status = 2
+                #barrier_status = spaceship.update_shield_status('enemy')
+                barrier_status = 2
                 if barrier_status < 0:
                     self.screen = 'game_over'
                 else:
