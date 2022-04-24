@@ -15,6 +15,7 @@ import pygame
 import random
 from images import *
 import time
+import objects as obj
 #import numpy as np
 #import matplotlib.pyplot as plt
 from pygame import mixer
@@ -52,7 +53,6 @@ level = 1
 level_licence = bronze_licence
 score = 0
 colorBord = (131, 139, 139)
-color_tmp = (124, 252, 0)
 height = 0
 passed_time = 0
 already_moved = False
@@ -77,184 +77,13 @@ def map_range(x):
     return y
 
 
-class Spaceship(pygame.sprite.Sprite):
-    def __init__(self):
-        self.shield_status = 2
-        self.speed_status = 2
-        self.image = spaceship_strong_barrier_image
-        self.surf = pygame.Surface((120, 230))
-        self.rect = self.surf.get_rect(midbottom=(WIDTH / 2, HEIGHT))
-
-    def draw(self):
-        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, (self.rect.centerx-72, self.rect.centery - 140))
-
-    def move(self, x):
-        if self.speed_status == 0:
-            x = 0
-        elif self.speed_status == 1:
-            x = x / 2.0
-        # prevent spaceship from moving out of the window
-        if (((x < 0) and (self.rect.left > (0 - x + 20))) or (x > 0 and (self.rect.right + x + 20) < WIDTH)):
-            self.rect.move_ip(x, 0)
-
-    def update_image(self):
-        if self.shield_status == 0:
-            if self.speed_status == 2:
-                self.image = spaceship_no_barrier_image
-            if self.speed_status == 1:
-                self.image = spaceship_red_no_barrier_image
-            if self.speed_status == 0:
-                self.image = spaceship_none_no_barrier_image
-        elif self.shield_status == 1:
-            if self.speed_status == 2:
-                self.image = spaceship_weak_barrier_image
-            if self.speed_status == 1:
-                self.image = spaceship_red_weak_barrier_image
-            if self.speed_status == 0:
-                self.image = spaceship_none_weak_barrier_image
-        elif self.shield_status == 2:
-            if self.speed_status == 2:
-                self.image = spaceship_strong_barrier_image
-            if self.speed_status == 1:
-                self.image = spaceship_red_strong_barrier_image
-            if self.speed_status == 0:
-                self.image = spaceship_none_strong_barrier_image
-
-    def update_shield_status(self, hit):
-        if hit == 'enemy':
-            self.shield_status -= 1
-
-        elif (self.shield_status < 2) and hit == 'energy':
-            self.shield_status += 1
-
-        self.update_image()
-        return self.shield_status
-
-    def get_shield_status(self):
-        return self.shield_status
-
-    def update_speed_status(self, react):
-        if react == 'up' and self.speed_status < 2:
-            self.speed_status += 1
-        elif react == 'down' and self.speed_status > 0:
-            self.speed_status -= 1
-        self.update_image()
-
-
-class Star:
-    def __init__(self):
-        self.radius = random.randint(1, 3)
-        self.x = random.randint(1, WIDTH - 1)
-        self.y = random.randint(1, HEIGHT - 1)
-        # self.speed = game_speed
-
-    def draw(self):
-        pygame.draw.circle(screen, WHITE, (self.x, self.y), self.radius)
-
-    def move(self):
-        self.y += BACKGROUND_SPEED
-
-    def appear_as_new_star(self):
-        if self.y >= HEIGHT:
-            self.y = 0
-            self.x = random.randint(1, WIDTH - 1)
-
-
-class Asteroid(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = asteroid_image
-        self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
-                                                  (random.randint((-HEIGHT - 300), 0))))
-
-    def move(self):
-        self.rect.move_ip(0, game_speed)
-        if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
-
-    def draw(self):
-        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, self.rect)
-
-
-class SpaceCow(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = spacecow_image
-        self.rect = self.image.get_rect(center=(random.randint(50, (WIDTH - 50)),
-                                                (random.randint((-HEIGHT - 300), 0))))
-
-    def move(self):
-        self.rect.move_ip(0, game_speed)
-        if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(50, (WIDTH - 50)), (random.randint((-HEIGHT - 300), 0)))
-
-    def draw(self):
-        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, self.rect)
-
-
-class Barplot:
-
-    def draw(self):
-        # color changing according pressure
-        if move_val > 0.6:
-            color_tmp = (255, 0, 0)  # red
-        elif 0.4 < move_val < MAX_PRESSURE:
-            color_tmp = (255, 255, 0)  # yellow
-        else:
-            color_tmp = (124, 252, 0)  # green
-
-        # heigt changes according pressure
-        height = move_val * 200
-        # for addapting center of rect
-        # center = move_val * 200
-        # filling rect
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(WIDTH-250, HEIGHT-810, height, 40))
-        # border rect
-        pygame.draw.rect(screen, colorBord, pygame.Rect(WIDTH-250, HEIGHT-810, 200, 40),  2)
-
-        # for label
-        font = pygame.font.SysFont(None, 30)
-        img = font.render('Pressure:', True, WHITE)
-        screen.blit(img, (WIDTH-250, HEIGHT-832))
-
-
-class EnergyBall(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = energy_image
-        self.fall = False
-        self.rect = self.image.get_rect(center=(random.randint(35, (WIDTH - 35)),
-                                               (random.randint((-HEIGHT - 300), 0))))
-
-    def move(self):
-        if self.fall:
-            self.rect.move_ip(0, game_speed)
-        if self.rect.top > HEIGHT:
-            self.rect.center = (random.randint(35, (WIDTH - 35)), -40)
-            self.fall = False
-
-    def draw(self):
-        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, self.rect)
-
-    def reset(self):
-        self.fall = False
-        self.rect.center = (random.randint(35, (WIDTH - 35)), -40)
-
-    def allow_movements(self):
-        self.fall = True
-
-
 def init_enemies():
     enemies = pygame.sprite.Group()
     for i in range(1, 9):
-        enemies.add(Asteroid())
+        enemies.add(obj.Asteroid(WIDTH, HEIGHT))
 
     for i in range(0, 1):
-        enemies.add(SpaceCow())
+        enemies.add(obj.SpaceCow(WIDTH, HEIGHT))
 
     return enemies
 
@@ -263,9 +92,9 @@ def add_enemy(x):
     for i in range(x):
         rnd = random.choices(NEW_OPPONENT, OPPONENT_WEIGHTS)
         if rnd[0] == 'asteroid':
-            enemy_group.add(Asteroid())
+            enemy_group.add(obj.Asteroid(WIDTH, HEIGHT))
         else:
-            enemy_group.add(SpaceCow())
+            enemy_group.add(obj.SpaceCow(WIDTH, HEIGHT))
 
 
 def redraw_text():
@@ -289,23 +118,23 @@ def redraw_objects(s):
     screen.fill(BLACK)
 
     for star in stars:
-        star.draw()
-        star.move()
-        star.appear_as_new_star()
+        star.draw(screen, WHITE)
+        star.move(BACKGROUND_SPEED)
+        star.appear_as_new_star(WIDTH, HEIGHT)
 
     for enemy in enemy_group:
-        enemy.draw()
-        enemy.move()
+        enemy.draw(screen)
+        enemy.move(game_speed, WIDTH, HEIGHT)
 
-    energy.draw()
-    energy.move()
-    spaceship.move(velocity)
-    spaceship.draw()
-    Barplot.draw(s)
+    energy.draw(screen)
+    energy.move(game_speed, WIDTH, HEIGHT)
+    spaceship.move(velocity, WIDTH)
+    spaceship.draw(screen)
+    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT)
 
 
-energy = EnergyBall()
-spaceship = Spaceship()
+energy = obj.EnergyBall(WIDTH, HEIGHT)
+spaceship = obj.Spaceship(WIDTH, HEIGHT)
 enemy_group = init_enemies()
 
 
@@ -314,17 +143,16 @@ class GameScreen:
         self.screen = 'intro'
 
     def screen_manager(self):
-        global energy, spaceship, enemy_group
+        global energy, enemy_group
         if self.screen == 'intro':
-            energy = EnergyBall()
-            spaceship = Spaceship()
+            energy = obj.EnergyBall(WIDTH, HEIGHT)
+            #spaceship = obj.Spaceship()
             enemy_group = init_enemies()
-            #start_time = pygame.time.get_ticks()
             coll = True
 
             while coll:
                 if pygame.sprite.spritecollideany(energy, enemy_group):
-                    energy = EnergyBall()
+                    energy = obj.EnergyBall(WIDTH, HEIGHT)
                 else:
                     coll = False
 
@@ -459,18 +287,18 @@ class GameScreen:
 
         if hit_detected:
             if hit_type == 'enemy':
-                #barrier_status = spaceship.update_shield_status('enemy')
-                barrier_status = 2
+                barrier_status = spaceship.update_shield_status('enemy')
+                # barrier_status = 2
                 if barrier_status < 0:
                     self.screen = 'game_over'
                 else:
                     add_enemy(1)
 
             if hit_type == 'energy':
-                energy.reset()
+                energy.reset(WIDTH)
                 while coll:
                     if pygame.sprite.spritecollideany(energy, enemy_group):
-                        energy = EnergyBall()
+                        energy = obj.EnergyBall(WIDTH, HEIGHT)
                     else:
                         coll = False
                 barrier_status = spaceship.update_shield_status('energy')
@@ -520,7 +348,7 @@ game_status = GameScreen()
 
 stars = []
 for i in range(200):
-    stars.append(Star())
+    stars.append(obj.Star(WIDTH, HEIGHT))
 
 INCREASE_SPEED = pygame.USEREVENT + 1
 pygame.time.set_timer(INCREASE_SPEED, 12000)
