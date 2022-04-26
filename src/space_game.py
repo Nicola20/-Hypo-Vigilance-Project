@@ -24,6 +24,8 @@ from pygame.constants import *
 # constants
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (227, 65, 22)
+YELLOW = (243, 219, 13)
 NEW_OPPONENT = ['asteroid', 'cow']
 OPPONENT_WEIGHTS = [20, 1]
 BACKGROUND_SPEED = 5
@@ -32,6 +34,7 @@ NUM_OF_LEVELS = 5
 MAX_PRESSURE = 0.7
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
+RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
 
 playing = True
 # initialize game
@@ -56,11 +59,13 @@ colorBord = (131, 139, 139)
 height = 0
 passed_time = 0
 already_moved = False
+end = False
 
 # load fonts for text
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
 in_level_font = pygame.font.Font(font_path, 25)
+scoring_font = pygame.font.Font(font_path, 30)
 text_width, text_height = game_font.size('Press X to start new Game')
 
 #load sound and background music
@@ -133,9 +138,43 @@ def redraw_objects(s):
     obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT)
 
 
+def display_star_background():
+    screen.fill(BLACK)
+    for star in stars:
+        star.draw(screen, WHITE)
+
+
 energy = obj.EnergyBall(WIDTH, HEIGHT)
 spaceship = obj.Spaceship(WIDTH, HEIGHT)
 enemy_group = init_enemies()
+
+
+def display_player_results():
+    global end, level
+
+    if not end:
+        level -= 1
+        end = True
+
+    level_display = game_font.render("Rank", True, RED)
+    screen.blit(level_display, (WIDTH / 3, (HEIGHT / 2) + 50))
+
+    if level > 0:
+        licence = LEVEL_LICENCE_LIST[level - 1]
+        screen.blit(licence, (WIDTH / 3, (HEIGHT / 2) + 130))
+        rank_name = RANKS[level - 1]
+        rank = scoring_font.render("/ " + rank_name, True, YELLOW)
+        screen.blit(rank, (WIDTH / 3 + 50, (HEIGHT / 2) + 130))
+    else:
+        rank_name = "None"
+        rank = scoring_font.render(rank_name, True, YELLOW)
+        screen.blit(rank, (WIDTH / 3, (HEIGHT / 2) + 130))
+
+    score_column = game_font.render("Score", True, RED)
+    screen.blit(score_column, ((WIDTH / 3) + 500, (HEIGHT / 2) + 50))
+
+    score_display = scoring_font.render(str(score), True, YELLOW)
+    screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 130))
 
 
 class GameScreen:
@@ -143,7 +182,7 @@ class GameScreen:
         self.screen = 'intro'
 
     def screen_manager(self):
-        global energy, enemy_group
+        global energy, enemy_group, level
         if self.screen == 'intro':
             energy = obj.EnergyBall(WIDTH, HEIGHT)
             #spaceship = obj.Spaceship()
@@ -165,9 +204,14 @@ class GameScreen:
             self.game_finished()
 
     def intro_screen(self) -> None:
-        global playing
-        screen.fill(BLACK)
+        global playing, end, contr
+
+        end = False
+        display_star_background()
+
         screen.blit(game_name, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 350))
+        text = in_level_font.render('Press C to select Controller Modi', True, WHITE)
+        screen.blit(text, ((WIDTH/2) - (text_width/2) + 30, HEIGHT - 100))
         text = game_font.render('Press X to start new Game', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
         #background sound
@@ -178,6 +222,12 @@ class GameScreen:
         pygame.display.flip()
 
         for event in pygame.event.get():
+            # for controller modi
+            # Condition becomes true when keyboard is pressed
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                if contr == 4:
+                    contr = 2
+
             if event.type == pygame.QUIT:
                 playing = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -189,7 +239,7 @@ class GameScreen:
 
     def game_play(self) -> None:
         global spaceship, playing, move_val, level, velocity,\
-            contr, enemy_group, energy, game_speed, colorBord, color_tmp, level, \
+            enemy_group, energy, game_speed, colorBord, color_tmp, level, \
             score, passed_time, level_licence, t0, already_moved
         events = pygame.event.get()
         hit_detected = False
@@ -197,12 +247,6 @@ class GameScreen:
         coll = True
 
         for event in events:
-            # for controller modi
-            # Condition becomes true when keyboard is pressed   
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
-                if contr == 4:
-                    contr = 2
-
             # trigger buttons ( range -1 to 1)
             if event.type == pygame.JOYAXISMOTION:
                 already_moved = True
@@ -306,11 +350,15 @@ class GameScreen:
         redraw_text()
 
     def game_over(self) -> None:
-        global playing
+        global playing, level, end
 
-        screen.blit(game_over, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 450))
+        # screen.fill(BLACK)
+        display_star_background()
+        screen.blit(game_over, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
+        display_player_results()
+
         text = game_font.render('Press X to continue', True, WHITE)
-        screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
+        screen.blit(text, ((WIDTH/2) - (text_width/2) + 50, HEIGHT - 200))
 
         pygame.display.flip()
 
@@ -327,7 +375,10 @@ class GameScreen:
     def game_finished(self) -> None:
         global playing
 
-        screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 450))
+        display_star_background()
+        screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
+        display_player_results()
+
         text = game_font.render('Press X to continue', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
 
