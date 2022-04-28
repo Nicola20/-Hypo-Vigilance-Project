@@ -71,11 +71,18 @@ text_width, text_height = game_font.size('Press X to start new Game')
 
 #load sound and background music
 intro_path = os.path.join(base_path, 'sounds/intro.wav')
+enemyHit_path = os.path.join(base_path, 'sounds/hit1.wav')
+energyHit_path = os.path.join(base_path, 'colectingEnergyball2.wav')
 
 # initialize joysticks
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
+
+#background sound
+mixer.music.load(intro_path)
+print("music loaded")
+mixer.music.play(-1)
 
 # mapping our range <-1,1> to <0,1>
 def map_range(x):
@@ -224,6 +231,7 @@ class GameScreen:
         elif self.screen == 'game_finished':
             self.game_finished()
 
+
     def intro_screen(self) -> None:
         global playing, contr
         display_star_background()
@@ -233,10 +241,7 @@ class GameScreen:
         screen.blit(text, ((WIDTH/2) - (text_width/2) + 30, HEIGHT - 100))
         text = game_font.render('Press X to start new Game', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
-        #background sound
-        #mixer.music.load(intro_path)
-        #print("music loaded")
-        #mixer.music.play(-1)
+        
 
         pygame.display.flip()
 
@@ -350,6 +355,12 @@ class GameScreen:
 
         if hit_detected:
             if hit_type == 'enemy':
+                
+                #enemy hit sound
+                h1 = mixer.Sound(enemyHit_path)
+                print("music loaded")
+                h1.play()
+
                 barrier_status = spaceship.update_shield_status('enemy')
                 # barrier_status = 2
                 if barrier_status < 0:
@@ -358,6 +369,12 @@ class GameScreen:
                     add_enemy(1)
 
             if hit_type == 'energy':
+                
+                #energy hit sound
+                h2 = mixer.Sound(enemyHit_path)
+                print("music loaded")
+                h2.play()
+
                 energy.reset(WIDTH)
                 while coll:
                     if pygame.sprite.spritecollideany(energy, enemy_group):
