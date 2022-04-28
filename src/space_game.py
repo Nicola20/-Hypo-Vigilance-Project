@@ -32,6 +32,7 @@ BACKGROUND_SPEED = 5
 FPS = 60
 NUM_OF_LEVELS = 5
 MAX_PRESSURE = 0.7
+MAX_SPEED = 12
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
 RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
@@ -51,12 +52,12 @@ WIDTH, HEIGHT = pygame.display.get_surface().get_size()
 move_val = 0
 velocity = 0
 contr = 4
-game_speed = 5.5
+game_speed = 4.5
 level = 1
 level_licence = bronze_licence
 score = 0
 colorBord = (131, 139, 139)
-height = 0
+# height = 0
 passed_time = 0
 already_moved = False
 end = False
@@ -84,7 +85,7 @@ def map_range(x):
 
 def init_enemies():
     enemies = pygame.sprite.Group()
-    for i in range(1, 9):
+    for i in range(1, 7):
         enemies.add(obj.Asteroid(WIDTH, HEIGHT))
 
     for i in range(0, 1):
@@ -177,24 +178,44 @@ def display_player_results():
     screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 130))
 
 
+def reset_game():
+    global end, already_moved, level, score, spaceship, energy, \
+        enemy_group, passed_time, level_licence, move_val, velocity, \
+        game_speed, t0
+
+    level = 1
+    score = 0
+    level_licence = LEVEL_LICENCE_LIST[0]
+    move_val = 0
+    velocity = 0
+    game_speed = 4.5
+    passed_time = 0
+    already_moved = False
+    end = False
+    spaceship = obj.Spaceship(WIDTH, HEIGHT)
+
+    energy = obj.EnergyBall(WIDTH, HEIGHT)
+    enemy_group = init_enemies()
+    coll = True
+
+    while coll:
+        if pygame.sprite.spritecollideany(energy, enemy_group):
+            energy = obj.EnergyBall(WIDTH, HEIGHT)
+        else:
+            coll = False
+
+    t0 = time.time()
+    pygame.time.set_timer(SPAWN_ENERGY, int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
+
+
 class GameScreen:
     def __init__(self):
         self.screen = 'intro'
 
     def screen_manager(self):
-        global energy, enemy_group, level
+        global energy, enemy_group
         if self.screen == 'intro':
-            energy = obj.EnergyBall(WIDTH, HEIGHT)
-            #spaceship = obj.Spaceship()
-            enemy_group = init_enemies()
-            coll = True
-
-            while coll:
-                if pygame.sprite.spritecollideany(energy, enemy_group):
-                    energy = obj.EnergyBall(WIDTH, HEIGHT)
-                else:
-                    coll = False
-
+            reset_game()
             self.intro_screen()
         elif self.screen == 'game_screen':
             self.game_play()
@@ -204,9 +225,7 @@ class GameScreen:
             self.game_finished()
 
     def intro_screen(self) -> None:
-        global playing, end, contr
-
-        end = False
+        global playing, contr
         display_star_background()
 
         screen.blit(game_name, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 350))
@@ -273,12 +292,12 @@ class GameScreen:
                     spaceship.update_speed_status('up')
                     t0 = time.time()
             elif already_moved and move_val >= MAX_PRESSURE:
-                if (t1 - t0) >= 0.9:
+                if (t1 - t0) >= 1:
                     spaceship.update_speed_status('down')
                     t0 = time.time()
 
             if event.type == INCREASE_SPEED:
-                if game_speed < 12:
+                if game_speed < MAX_SPEED:
                     game_speed = round(game_speed + 0.1, 1)
                 #print("I am speed " + str(game_speed))
 
