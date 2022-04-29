@@ -65,24 +65,24 @@ end = False
 # load fonts for text
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
-in_level_font = pygame.font.Font(font_path, 25)
+in_level_font = pygame.font.Font(font_path, 24)
 scoring_font = pygame.font.Font(font_path, 30)
 text_width, text_height = game_font.size('Press X to start new Game')
 
-#load sound and background music
+# load sound and background music
 intro_path = os.path.join(base_path, 'sounds/intro.wav')
 enemyHit_path = os.path.join(base_path, 'sounds/hit1.wav')
-energyHit_path = os.path.join(base_path, 'colectingEnergyball2.wav')
+energyHit_path = os.path.join(base_path, 'sounds/colectingEnergyball2.wav')
 
 # initialize joysticks
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
 
-#background sound
+# background sound
 mixer.music.load(intro_path)
-print("music loaded")
 mixer.music.play(-1)
+
 
 # mapping our range <-1,1> to <0,1>
 def map_range(x):
@@ -143,7 +143,7 @@ def redraw_objects(s):
     energy.move(game_speed, WIDTH, HEIGHT)
     spaceship.move(velocity, WIDTH)
     spaceship.draw(screen)
-    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT)
+    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font)
 
 
 def display_star_background():
@@ -358,7 +358,6 @@ class GameScreen:
                 
                 #enemy hit sound
                 h1 = mixer.Sound(enemyHit_path)
-                print("music loaded")
                 h1.play()
 
                 barrier_status = spaceship.update_shield_status('enemy')
@@ -371,8 +370,7 @@ class GameScreen:
             if hit_type == 'energy':
                 
                 #energy hit sound
-                h2 = mixer.Sound(enemyHit_path)
-                print("music loaded")
+                h2 = mixer.Sound(energyHit_path)
                 h2.play()
 
                 energy.reset(WIDTH)
