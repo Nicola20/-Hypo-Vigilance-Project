@@ -123,7 +123,7 @@ class SpaceCow(pygame.sprite.Sprite):
 
 class Barplot:
 
-    def draw(self, move, threshold, screen, color_bord, color, width, height):
+    def draw(self, move, threshold, screen, color_bord, color, width, height, font):
         # color changing according pressure
         if move > 0.6:
             color_tmp = (255, 0, 0)  # red
@@ -132,19 +132,20 @@ class Barplot:
         else:
             color_tmp = (124, 252, 0)  # green
 
+        text = 'Pressure:'
+        label_height, label_width = font.size(text)
+        img = font.render(text, True, color)
+        # for label
+        screen.blit(img, (width-250, 15))
+
         # heigt changes according pressure
         bar = move * 200
         # for addapting center of rect
         # center = move_val * 200
         # filling rect
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(width-250, height-810, bar, 40))
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(width-250, 50, bar, 40))
         # border rect
-        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250, height-810, 200, 40),  2)
-
-        # for label
-        font = pygame.font.SysFont(None, 30)
-        img = font.render('Pressure:', True, color)
-        screen.blit(img, (width-250, height-832))
+        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250, 50, 200, 40),  2)
 
 
 class EnergyBall(pygame.sprite.Sprite):

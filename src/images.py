@@ -46,7 +46,7 @@ asteroid_path = os.path.join(base_path, 'graphics/asteroid.png')
 asteroid_image = pygame.image.load(asteroid_path)
 asteroid_image = pygame.transform.scale(asteroid_image, (90, 90))
 
-spacecow_path = os.path.join(base_path, 'graphics/spaceCow.png')
+spacecow_path = os.path.join(base_path, 'graphics/spaceCow2.png')
 spacecow_image = pygame.image.load(spacecow_path)
 spacecow_image = pygame.transform.scale(spacecow_image, (90, 90))
 

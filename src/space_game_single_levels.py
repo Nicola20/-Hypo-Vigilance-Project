@@ -26,15 +26,16 @@ WHITE = (255, 255, 255)
 RED = (227, 65, 22)
 YELLOW = (243, 219, 13)
 NEW_OPPONENT = ['asteroid', 'cow']
-# OPPONENT_WEIGHTS = [20, 1]
+OPPONENT_WEIGHTS = [20, 1]
 BACKGROUND_SPEED = 5
-FPS = 70
-# NUM_OF_LEVELS = 5
+FPS = 50
 MAX_PRESSURE = 0.7
-# MAX_SPEED = 12
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
 RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
+
+# TO-DO: Tweake hier noch etwas rum, setzte mehr Wert auf höhere Anzahl Gegner als Geschwindigkeit
+# Gerade speed-up by 25%
 SETTINGS = {0: {'speed': 2.0, 'enemies': 4}, 1: {'speed': 4.5, 'enemies': 6},
             2: {'speed': 5.63, 'enemies': 7}, 3: {'speed': 7.04, 'enemies': 8},
             4: {'speed': 8.8, 'enemies': 9}, 5: {'speed': 11, 'enemies': 10}}
@@ -118,6 +119,14 @@ def init_enemies():
 
     return enemies
 
+def add_enemy(x):
+    for i in range(x):
+        rnd = random.choices(NEW_OPPONENT, OPPONENT_WEIGHTS)
+        if rnd[0] == 'asteroid':
+            enemy_group.add(obj.Asteroid(WIDTH, HEIGHT))
+        else:
+            enemy_group.add(obj.SpaceCow(WIDTH, HEIGHT))
+
 
 def redraw_text():
     # change milliseconds into minutes, seconds
@@ -183,37 +192,6 @@ def display_player_results():
     score_display = scoring_font.render(str(score), True, YELLOW)
     screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 130))
 
-"""
-def reset_game():
-    global end, already_moved, level, score, spaceship, energy, \
-        enemy_group, passed_time, level_licence, move_val, velocity, \
-        game_speed, t0
-
-    level = 1
-    score = 0
-    level_licence = LEVEL_LICENCE_LIST[0]
-    move_val = 0
-    velocity = 0
-    game_speed = 4.5
-    passed_time = 0
-    already_moved = False
-    end = False
-    spaceship = obj.Spaceship(WIDTH, HEIGHT)
-
-    energy = obj.EnergyBall(WIDTH, HEIGHT)
-    enemy_group = init_enemies()
-    coll = True
-
-    while coll:
-        if pygame.sprite.spritecollideany(energy, enemy_group):
-            energy = obj.EnergyBall(WIDTH, HEIGHT)
-        else:
-            coll = False
-
-    t0 = time.time()
-    pygame.time.set_timer(SPAWN_ENERGY, int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
-"""
-
 
 class GameScreen:
     def __init__(self):
@@ -222,7 +200,6 @@ class GameScreen:
     def screen_manager(self):
         global energy, enemy_group
         if self.screen == 'intro':
-            # reset_game()
             self.intro_screen()
         elif self.screen == 'game_screen':
             self.game_play()
@@ -252,10 +229,8 @@ class GameScreen:
 
             if event.type == pygame.QUIT:
                 playing = False
-                pygame.quit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 playing = False
-                pygame.quit()
             if event.type == pygame.JOYBUTTONDOWN:
                 # print(event, flush=True)
                 if event.button == 0:
@@ -301,33 +276,13 @@ class GameScreen:
                     spaceship.update_speed_status('down')
                     t0 = time.time()
 
-            # if event.type == INCREASE_SPEED:
-            #    if game_speed < MAX_SPEED:
-            #        game_speed = round(game_speed + 0.1, 1)
-                #print("I am speed " + str(game_speed))
-
             if event.type == INCREASE_TIME:
                 passed_time += 1
                 passed_seconds = (passed_time / 1000) % 60
-                # passed_minutes = (passed_time / (1000 * 60)) % 60
 
                 # increase the score every 2 seconds
                 if passed_seconds % 2 == 0:
                     score += 1
-
-                # increase the level every 3 minutes
-                #if passed_minutes % 2 == 0:
-                #    level += 1
-                #    if level != 6:
-                        # reset the timer for the energy balls to control the number of spawned energy per level
-                #        pygame.time.set_timer(SPAWN_ENERGY,
-                #                              int((150000 / (5 - level + 1))) + random.randint(-11000, 11000))
-
-                        # increase the enemies
-                        # if level != 5:
-                #        add_enemy(1)
-                        # update the level symbol
-                #        level_licence = LEVEL_LICENCE_LIST[level - 1]
 
                 if passed_time >= LEVEL_DURATION:
                     extra = 100 * level * spaceship.get_shield_status()
@@ -363,8 +318,8 @@ class GameScreen:
                 # barrier_status = 2
                 if barrier_status < 0:
                     self.screen = 'game_over'
-                # else:
-                    #add_enemy(1)
+                else:
+                    add_enemy(1)
 
             if hit_type == 'energy':
                 
@@ -386,7 +341,7 @@ class GameScreen:
         global playing, level, end
 
         # screen.fill(BLACK)
-        display_star_background()
+        #display_star_background()
         screen.blit(game_over, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
         display_player_results()
 
@@ -411,7 +366,7 @@ class GameScreen:
     def game_finished(self) -> None:
         global playing
 
-        display_star_background()
+        #display_star_background()
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
         display_player_results()
 
@@ -443,20 +398,16 @@ stars = []
 for i in range(200):
     stars.append(obj.Star(WIDTH, HEIGHT))
 
-# INCREASE_SPEED = pygame.USEREVENT + 1
-# pygame.time.set_timer(INCREASE_SPEED, 12000)
-
-INCREASE_TIME = pygame.USEREVENT + 2
+INCREASE_TIME = pygame.USEREVENT + 1
 pygame.time.set_timer(INCREASE_TIME, 1)
 
 # spawn energy balls regularly with a random time offset
-SPAWN_ENERGY = pygame.USEREVENT + 3
+SPAWN_ENERGY = pygame.USEREVENT + 2
 # init the time depending on the level. In the first level, 5 energyballs should appear, in the 2nd level 4...
 # Also create a little random offset to make it a little less predictable
 if level != 0:
-    pygame.time.set_timer(SPAWN_ENERGY, int((120000/(5 - level + 1))) + random.randint(-9000, 9000))
+    pygame.time.set_timer(SPAWN_ENERGY, int((120000/(5 - level + 1))) + random.randint(-11000, 11000))
 else:
-    print("I am level 0")
     pygame.time.set_timer(SPAWN_ENERGY, 30000)
 t0 = time.time()
 
