@@ -13,6 +13,7 @@
 
 import pygame
 import random
+import json
 from images import *
 import time
 import objects as obj
@@ -28,7 +29,7 @@ YELLOW = (243, 219, 13)
 NEW_OPPONENT = ['asteroid', 'cow']
 OPPONENT_WEIGHTS = [20, 1]
 BACKGROUND_SPEED = 5
-FPS = 50
+FPS = 60
 MAX_PRESSURE = 0.7
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
@@ -36,9 +37,9 @@ RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
 
 # TO-DO: Tweake hier noch etwas rum, setzte mehr Wert auf höhere Anzahl Gegner als Geschwindigkeit
 # Gerade speed-up by 25%
-SETTINGS = {0: {'speed': 2.0, 'enemies': 4}, 1: {'speed': 4.5, 'enemies': 6},
-            2: {'speed': 5.63, 'enemies': 7}, 3: {'speed': 7.04, 'enemies': 8},
-            4: {'speed': 8.8, 'enemies': 9}, 5: {'speed': 11, 'enemies': 10}}
+SETTINGS = {0: {'speed': 2.0, 'enemies': 5}, 1: {'speed': 4.5, 'enemies': 7},
+            2: {'speed': 5.18, 'enemies': 8}, 3: {'speed': 5.96, 'enemies': 9},
+            4: {'speed': 6.85, 'enemies': 10}, 5: {'speed': 7.88, 'enemies': 11}}
 
 
 level_licence = bronze_licence
@@ -49,8 +50,8 @@ score = 0
 colorBord = (131, 139, 139)
 passed_time = 0
 already_moved = False
-end = False
 playing = True
+saved_data = False
 LEVEL_DURATION = 120000
 
 # Read arguments from console that decide which level is going to be played
@@ -70,6 +71,8 @@ if level == 0:
 else:
     level_licence = LEVEL_LICENCE_LIST[level - 1]
 
+user_stats = {'user_id': file, 'level': level, 'score': 0, 'time played in ms': 0, 'number of enemy hits': 0,
+              'number of energy collections': 0, 'pressure': {}}
 
 # initialize game
 pygame.init()
@@ -119,6 +122,7 @@ def init_enemies():
 
     return enemies
 
+
 def add_enemy(x):
     for i in range(x):
         rnd = random.choices(NEW_OPPONENT, OPPONENT_WEIGHTS)
@@ -126,6 +130,39 @@ def add_enemy(x):
             enemy_group.add(obj.Asteroid(WIDTH, HEIGHT))
         else:
             enemy_group.add(obj.SpaceCow(WIDTH, HEIGHT))
+
+
+def update_move_stats(val):
+    global user_stats
+    pressure_stats = user_stats['pressure']
+    val = round(val, 2)
+    if val not in pressure_stats:
+        pressure_stats[val] = 1
+    else:
+        pressure_stats[val] += 1
+
+
+def update_hit_stats(hit_type):
+    global user_stats
+
+    if hit_type == 'energy':
+        user_stats['number of energy collections'] += 1
+    else:
+        user_stats['number of enemy hits'] += 1
+
+
+def update_score_and_time(ms, scr):
+    global user_stats
+    user_stats['score'] = scr
+    user_stats['time played in ms'] = ms
+
+
+def save_user_stats():
+    global saved_data
+    if not saved_data:
+        saved_data = True
+        with open(file + '.json', 'w', encoding='utf-8') as f:
+            json.dump(user_stats, f, indent=4)
 
 
 def redraw_text():
@@ -204,8 +241,10 @@ class GameScreen:
         elif self.screen == 'game_screen':
             self.game_play()
         elif self.screen == 'game_over':
+            save_user_stats()
             self.game_over()
         elif self.screen == 'game_finished':
+            save_user_stats()
             self.game_finished()
 
     def intro_screen(self) -> None:
@@ -253,6 +292,7 @@ class GameScreen:
                 if event.axis == contr: 
                     if event.value > -1:
                         move_val = map_range(event.value)
+                        update_move_stats(move_val)
                         velocity = -5
                     else:
                         velocity = 0
@@ -261,6 +301,7 @@ class GameScreen:
                 if event.axis == 5:
                     if event.value > -1:
                         move_val = map_range(event.value)
+                        update_move_stats(move_val)
                         velocity = 5
                     else:
                         velocity = 0
@@ -272,7 +313,7 @@ class GameScreen:
                     spaceship.update_speed_status('up')
                     t0 = time.time()
             elif already_moved and move_val >= MAX_PRESSURE:
-                if (t1 - t0) >= 1:
+                if (t1 - t0) >= 0.8:
                     spaceship.update_speed_status('down')
                     t0 = time.time()
 
@@ -287,6 +328,7 @@ class GameScreen:
                 if passed_time >= LEVEL_DURATION:
                     extra = 100 * level * spaceship.get_shield_status()
                     score += extra
+                    update_score_and_time(LEVEL_DURATION, score)
                     self.screen = 'game_finished'
 
             if event.type == SPAWN_ENERGY:
@@ -308,15 +350,16 @@ class GameScreen:
             hit_type = 'enemy'
 
         if hit_detected:
+            update_hit_stats(hit_type)
             if hit_type == 'enemy':
-                
-                #enemy hit sound
+                # enemy hit sound
                 h1 = mixer.Sound(enemyHit_path)
                 h1.play()
 
                 barrier_status = spaceship.update_shield_status('enemy')
                 # barrier_status = 2
                 if barrier_status < 0:
+                    update_score_and_time(passed_time, score)
                     self.screen = 'game_over'
                 else:
                     add_enemy(1)
@@ -338,7 +381,7 @@ class GameScreen:
         redraw_text()
 
     def game_over(self) -> None:
-        global playing, level, end
+        global playing, level
 
         # screen.fill(BLACK)
         #display_star_background()
