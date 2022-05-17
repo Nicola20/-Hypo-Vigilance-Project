@@ -146,6 +146,10 @@ class Barplot:
         pygame.draw.rect(screen, color_tmp, pygame.Rect(width-250, 50, bar, 40))
         # border rect
         pygame.draw.rect(screen, color_bord, pygame.Rect(width-250, 50, 200, 40),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250 , 50, 80, 40),  2)         
+        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250 , 50, 120, 40),  2)              
+        
+        
 
 
 class EnergyBall(pygame.sprite.Sprite):
