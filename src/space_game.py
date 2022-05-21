@@ -143,7 +143,7 @@ def redraw_objects(s):
     energy.move(game_speed, WIDTH, HEIGHT)
     spaceship.move(velocity, WIDTH)
     spaceship.draw(screen)
-    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font)
+    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font, spaceship)
 
 
 def display_star_background():

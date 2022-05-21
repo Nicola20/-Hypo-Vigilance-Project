@@ -13,8 +13,8 @@ class Spaceship(pygame.sprite.Sprite):
 
     def draw(self, screen):
         # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, (self.rect.centerx-72, self.rect.centery - 140))
-
+        screen.blit(self.image, (self.rect.centerx-72, self.rect.centery - 200))
+        
     def move(self, x, width):
         if self.speed_status == 0:
             x = 0
@@ -121,9 +121,9 @@ class SpaceCow(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 
-class Barplot:
+class Barplot():
 
-    def draw(self, move, threshold, screen, color_bord, color, width, height, font):
+    def draw(self, move, threshold, screen, color_bord, color, width, height, font, spaceship):
         # color changing according pressure
         if move > 0.6:
             color_tmp = (255, 0, 0)  # red
@@ -143,13 +143,16 @@ class Barplot:
         # for addapting center of rect
         # center = move_val * 200
         # filling rect
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(width-250, 50, bar, 40))
-        # border rect
-        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250, 50, 200, 40),  2)
-        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250 , 50, 80, 40),  2)         
-        pygame.draw.rect(screen, color_bord, pygame.Rect(width-250 , 50, 120, 40),  2)              
+        #spaceshipPos = Spaceship.get_rect()
         
+        #filling
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, bar, 20))
+        # border rects
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 200, 20),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 80, 20),  2)         
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 120, 20),  2)              
         
+       
 
 
 class EnergyBall(pygame.sprite.Sprite):
