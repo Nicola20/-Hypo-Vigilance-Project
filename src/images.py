@@ -87,3 +87,18 @@ course_clear = pygame.transform.scale(course_clear, (850, 320))
 game_over_path = os.path.join(base_path, 'graphics/game_over.png')
 game_over = pygame.image.load(game_over_path)
 game_over = pygame.transform.scale(game_over, (850, 320))
+
+countdown_3_path = os.path.join(base_path, 'graphics/countdown_3.png')
+countdown_3 = pygame.image.load(countdown_3_path)
+img_size = countdown_3.get_size()
+countdown_3 = pygame.transform.scale(countdown_3, (img_size[0] - 100, img_size[1] - 100))
+
+countdown_2_path = os.path.join(base_path, 'graphics/countdown_2.png')
+countdown_2 = pygame.image.load(countdown_2_path)
+img_size = countdown_2.get_size()
+countdown_2 = pygame.transform.scale(countdown_2, (img_size[0] - 100, img_size[1] - 100))
+
+countdown_1_path = os.path.join(base_path, 'graphics/countdown_1.png')
+countdown_1 = pygame.image.load(countdown_1_path)
+img_size = countdown_1.get_size()
+countdown_1 = pygame.transform.scale(countdown_1, (img_size[0] - 100, img_size[1] - 100))

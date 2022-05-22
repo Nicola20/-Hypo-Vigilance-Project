@@ -49,6 +49,7 @@ score = 0
 colorBord = (131, 139, 139)
 passed_time = 0
 already_moved = False
+counter_time = 0
 playing = True
 saved_data = False
 LEVEL_DURATION = 120000
@@ -235,9 +236,13 @@ class GameScreen:
         self.screen = 'intro'
 
     def screen_manager(self):
+        #global t0
         global energy, enemy_group
         if self.screen == 'intro':
             self.intro_screen()
+        elif self.screen == 'countdown':
+            #t0 = time.time()
+            self.countdown_start()
         elif self.screen == 'game_screen':
             self.game_play()
         elif self.screen == 'game_over':
@@ -273,7 +278,37 @@ class GameScreen:
             if event.type == pygame.JOYBUTTONDOWN:
                 # print(event, flush=True)
                 if event.button == 0:
+                    self.screen = 'countdown'
+
+    def countdown_start(self):
+        global playing, counter_time
+        display_star_background()
+        spaceship.draw(screen)
+        obj.Barplot.draw(self, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font, spaceship)
+
+        for event in pygame.event.get():
+            # for controller modi
+            if event.type == pygame.QUIT:
+                playing = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                playing = False
+            if event.type == COUNTER:
+                counter_time += 1
+                if counter_time == 1:
+                    screen.blit(countdown_3, ((WIDTH / 2) - (countdown_3.get_width() / 2),
+                                              (HEIGHT / 2) - (countdown_3.get_height() / 2) - 150))
+                    pygame.display.flip()
+                elif counter_time == 2:
+                    screen.blit(countdown_2, ((WIDTH / 2) - (countdown_2.get_width() / 2),
+                                              (HEIGHT / 2) - (countdown_2.get_height() / 2) - 150))
+                    pygame.display.flip()
+                elif counter_time == 3:
+                    screen.blit(countdown_1, ((WIDTH / 2) - (countdown_1.get_width() / 2),
+                                              (HEIGHT / 2) - (countdown_1.get_height() / 2) - 150))
+                    pygame.display.flip()
+                elif counter_time == 4:
                     self.screen = 'game_screen'
+                    pygame.display.flip()
 
     def game_play(self) -> None:
         global spaceship, playing, move_val, level, velocity,\
@@ -456,6 +491,9 @@ pygame.time.set_timer(INCREASE_TIME, 1)
 
 # spawn energy balls regularly with a random time offset
 SPAWN_ENERGY = pygame.USEREVENT + 2
+
+COUNTER = pygame.USEREVENT + 3
+pygame.time.set_timer(COUNTER, 1000)
 # init the time depending on the level. In the first level, 5 energyballs should appear, in the 2nd level 4...
 # Also create a little random offset to make it a little less predictable
 if level != 0:
