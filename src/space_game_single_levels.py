@@ -35,11 +35,10 @@ LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
                       gold_licence, diamond_licence, platinum_licence]
 RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
 
-# TO-DO: Tweake hier noch etwas rum, setzte mehr Wert auf höhere Anzahl Gegner als Geschwindigkeit
-# Gerade speed-up by 25%
-SETTINGS = {0: {'speed': 2.0, 'enemies': 5}, 1: {'speed': 4.5, 'enemies': 7},
-            2: {'speed': 5.18, 'enemies': 8}, 3: {'speed': 5.96, 'enemies': 9},
-            4: {'speed': 6.85, 'enemies': 10}, 5: {'speed': 7.88, 'enemies': 11}}
+# Gerade speed-up by 10%
+SETTINGS = {0: {'speed': 2.0, 'enemies': 5}, 1: {'speed': 5.1, 'enemies': 8},
+            2: {'speed': 5.61, 'enemies': 9}, 3: {'speed': 6.17, 'enemies': 10},
+            4: {'speed': 6.79, 'enemies': 11}, 5: {'speed': 7.47, 'enemies': 12}}
 
 
 level_licence = bronze_licence
@@ -88,6 +87,7 @@ WIDTH, HEIGHT = pygame.display.get_surface().get_size()
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
 game_font = pygame.font.Font(font_path, 35)
 in_level_font = pygame.font.Font(font_path, 24)
+attribution_font = pygame.font.Font(font_path, 15)
 scoring_font = pygame.font.Font(font_path, 30)
 text_width, text_height = game_font.size('Press X to start new Game')
 
@@ -198,7 +198,7 @@ def redraw_objects(s):
     energy.move(game_speed, WIDTH, HEIGHT)
     spaceship.move(velocity, WIDTH)
     spaceship.draw(screen)
-    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font)
+    obj.Barplot.draw(s, move_val, MAX_PRESSURE, screen, colorBord, WHITE, WIDTH, HEIGHT, in_level_font, spaceship)
 
 
 def display_star_background():
@@ -384,12 +384,17 @@ class GameScreen:
         global playing, level
 
         # screen.fill(BLACK)
-        #display_star_background()
+        display_star_background()
         screen.blit(game_over, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
         display_player_results()
 
         text = game_font.render('Press X to quit Game', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2) + 50, HEIGHT - 200))
+
+        attr = 'Background Music by: https://www.dl-sounds.com/royalty-free/free-game-loop2/'
+        attribution = attribution_font.render(attr, True, WHITE)
+        attribution_width, attribution_height = attribution_font.size(attr)
+        screen.blit(attribution, (WIDTH - attribution_width - 20, HEIGHT - 20))
 
         pygame.display.flip()
 
@@ -409,12 +414,17 @@ class GameScreen:
     def game_finished(self) -> None:
         global playing
 
-        #display_star_background()
+        display_star_background()
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
         display_player_results()
 
         text = game_font.render('Press X to quit Game', True, WHITE)
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
+
+        attr = 'Background Music by: https://www.dl-sounds.com/royalty-free/free-game-loop2/'
+        attribution = attribution_font.render(attr, True, WHITE)
+        attribution_width, attribution_height = attribution_font.size(attr)
+        screen.blit(attribution, (WIDTH - attribution_width - 20, HEIGHT - 20))
 
         pygame.display.flip()
 

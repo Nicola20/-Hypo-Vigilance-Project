@@ -132,11 +132,11 @@ class Barplot():
         else:
             color_tmp = (124, 252, 0)  # green
 
-        text = 'Pressure:'
-        label_height, label_width = font.size(text)
-        img = font.render(text, True, color)
+        #text = 'Pressure:'
+        # label_height, label_width = font.size(text)
+        #img = font.render(text, True, color)
         # for label
-        screen.blit(img, (width-250, 15))
+        #screen.blit(img, (width-250, 15))
 
         # heigt changes according pressure
         bar = move * 200
@@ -146,14 +146,16 @@ class Barplot():
         #spaceshipPos = Spaceship.get_rect()
         
         #filling
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, bar, 20))
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 102,
+                                                        spaceship.rect.centery + 50, bar, 10))
         # border rects
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 200, 20),  2)
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 80, 20),  2)         
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102, spaceship.rect.centery +50, 120, 20),  2)              
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
+                                                         spaceship.rect.centery + 50, 200, 10),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
+                                                         spaceship.rect.centery + 50, 80, 10),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
+                                                         spaceship.rect.centery + 50, 120, 10),  2)
         
-       
-
 
 class EnergyBall(pygame.sprite.Sprite):
     def __init__(self, width, height):
