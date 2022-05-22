@@ -45,7 +45,8 @@ level_licence = bronze_licence
 move_val = 0
 velocity = 0
 contr = 4
-score = 0
+basic_score = 0
+extra_score = 0
 colorBord = (131, 139, 139)
 passed_time = 0
 already_moved = False
@@ -72,7 +73,7 @@ else:
     level_licence = LEVEL_LICENCE_LIST[level - 1]
 
 user_stats = {'user_id': file, 'level': level, 'score': 0, 'time played in ms': 0, 'number of enemy hits': 0,
-              'number of energy collections': 0, 'pressure': {}}
+              'number of energy collections': 0, 'pressure penalties': 0, 'pressure': {}}
 
 # initialize game
 pygame.init()
@@ -136,11 +137,16 @@ def add_enemy(x):
 def update_move_stats(val):
     global user_stats
     pressure_stats = user_stats['pressure']
-    val = round(val, 2)
+    val = round(val, 6)
     if val not in pressure_stats:
         pressure_stats[val] = 1
     else:
         pressure_stats[val] += 1
+
+
+def update_num_of_pressure_penalties():
+    global user_stats
+    user_stats['pressure penalties'] += 1
 
 
 def update_hit_stats(hit_type):
@@ -174,7 +180,7 @@ def redraw_text():
     timer = "Time: %02d:%02d" % (passed_minutes, passed_seconds)
     timer_display = in_level_font.render(str(timer), True, WHITE)
     screen.blit(timer_display, (30, 20))
-    score_str = "Score: " + str(score)
+    score_str = "Score: " + str(basic_score)
     score_display = in_level_font.render(score_str, True, WHITE)
     screen.blit(score_display, (490, 20))
     level_display = in_level_font.render("Level: " + str(level), True, WHITE)
@@ -227,8 +233,14 @@ def display_player_results():
     score_column = game_font.render("Score", True, RED)
     screen.blit(score_column, ((WIDTH / 3) + 500, (HEIGHT / 2) + 50))
 
-    score_display = scoring_font.render(str(score), True, YELLOW)
+    score_display = scoring_font.render("Basic:      " + str(basic_score), True, YELLOW)
     screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 130))
+
+    score_display = scoring_font.render("Bonus:     " + str(extra_score), True, YELLOW)
+    screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 170))
+
+    score_display = scoring_font.render("Total:      " + str(extra_score + basic_score), True, YELLOW)
+    screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 210))
 
 
 class GameScreen:
@@ -313,7 +325,7 @@ class GameScreen:
     def game_play(self) -> None:
         global spaceship, playing, move_val, level, velocity,\
             enemy_group, energy, game_speed, colorBord, color_tmp, level, \
-            score, passed_time, level_licence, t0, already_moved
+            basic_score, extra_score, passed_time, level_licence, t0, already_moved
         events = pygame.event.get()
         hit_detected = False
         hit_type = 'enemy'
@@ -350,6 +362,7 @@ class GameScreen:
             elif already_moved and move_val >= MAX_PRESSURE:
                 if (t1 - t0) >= 0.8:
                     spaceship.update_speed_status('down')
+                    update_num_of_pressure_penalties()
                     t0 = time.time()
 
             if event.type == INCREASE_TIME:
@@ -358,11 +371,11 @@ class GameScreen:
 
                 # increase the score every 2 seconds
                 if passed_seconds % 2 == 0:
-                    score += 1
+                    basic_score += 1
 
                 if passed_time >= LEVEL_DURATION:
-                    extra = 100 * level * spaceship.get_shield_status()
-                    score += extra
+                    extra_score = 100 * level * spaceship.get_shield_status()
+                    score = basic_score + extra_score
                     update_score_and_time(LEVEL_DURATION, score)
                     self.screen = 'game_finished'
 
@@ -394,7 +407,7 @@ class GameScreen:
                 barrier_status = spaceship.update_shield_status('enemy')
                 # barrier_status = 2
                 if barrier_status < 0:
-                    update_score_and_time(passed_time, score)
+                    update_score_and_time(passed_time, basic_score)
                     self.screen = 'game_over'
                 else:
                     add_enemy(1)
