@@ -13,10 +13,12 @@ class Spaceship(pygame.sprite.Sprite):
         self.image = spaceship_strong_barrier_image
         self.surf = pygame.Surface((120, 230))
         self.rect = self.surf.get_rect(midbottom=(width / 2, height))
+        self.rect.move_ip(0, -40)
 
     def draw(self, screen):
-        # pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
-        screen.blit(self.image, (self.rect.centerx-72, self.rect.centery - 200))
+        #WHITE = (255, 255, 255)
+        #pygame.draw.rect(screen, WHITE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height), 3)
+        screen.blit(self.image, (self.rect.centerx - 72, self.rect.centery - 125))
         
     def move(self, x, width):
         if self.speed_status == 0:
@@ -145,22 +147,23 @@ class Barplot():
         #screen.blit(img, (width-250, 15))
 
         # heigt changes according pressure
-        bar = move * 200
+        bar = move * 120
+        
         # for addapting center of rect
         # center = move_val * 200
         # filling rect
         #spaceshipPos = Spaceship.get_rect()
         
         #filling
-        pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 102,
-                                                        spaceship.rect.centery + 50, bar, 10))
+        pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 62,
+                                                        spaceship.rect.centery+120, bar, 10))
         # border rects
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
-                                                         spaceship.rect.centery + 50, 200, 10),  2)
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
-                                                         spaceship.rect.centery + 50, 80, 10),  2)
-        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 102,
-                                                         spaceship.rect.centery + 50, 120, 10),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 62,
+                                                         spaceship.rect.centery+120, 120, 10),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 62,
+                                                         spaceship.rect.centery+120, 40, 10),  2)
+        pygame.draw.rect(screen, color_bord, pygame.Rect(spaceship.rect.centerx - 62,
+                                                         spaceship.rect.centery+120, 80, 10),  2)
         
 
 class EnergyBall(pygame.sprite.Sprite):
