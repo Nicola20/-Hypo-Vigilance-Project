@@ -132,13 +132,18 @@ class SpaceCow(pygame.sprite.Sprite):
 class Barplot():
 
     def draw(self, move, threshold, screen, color_bord, color, width, height, font, spaceship):
-        # color changing according pressure
+        
+        # color + length changing according pressure
         if move > 0.6:
             color_tmp = (255, 0, 0)  # red
+            bar = 20+ move*100
         elif 0.4 < move < threshold:
             color_tmp = (255, 255, 0)  # yellow
+            bar = move*200-40
         else:
             color_tmp = (124, 252, 0)  # green
+            bar = move*100
+            
 
         #text = 'Pressure:'
         # label_height, label_width = font.size(text)
@@ -146,14 +151,7 @@ class Barplot():
         # for label
         #screen.blit(img, (width-250, 15))
 
-        # heigt changes according pressure
-        bar = move * 120
-        
-        # for addapting center of rect
-        # center = move_val * 200
-        # filling rect
-        #spaceshipPos = Spaceship.get_rect()
-        
+               
         #filling
         pygame.draw.rect(screen, color_tmp, pygame.Rect(spaceship.rect.centerx - 62,
                                                         spaceship.rect.centery+120, bar, 10))
