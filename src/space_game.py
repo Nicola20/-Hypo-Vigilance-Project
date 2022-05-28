@@ -61,6 +61,8 @@ colorBord = (131, 139, 139)
 passed_time = 0
 already_moved = False
 end = False
+exeO = 0
+exeF = 0
 
 # load fonts for text
 font_path = os.path.join(base_path, 'fonts/Audiowide/Audiowide-Regular.ttf')
@@ -73,6 +75,9 @@ text_width, text_height = game_font.size('Press X to start new Game')
 intro_path = os.path.join(base_path, 'sounds/intro.wav')
 enemyHit_path = os.path.join(base_path, 'sounds/hit1.wav')
 energyHit_path = os.path.join(base_path, 'sounds/colectingEnergyball2.wav')
+gameOver_path = os.path.join(base_path, 'sounds/gameOver.wav')
+speedReduction_path = os.path.join(base_path, 'sounds/speedReduction.wav')
+gameWin_path = os.path.join(base_path, 'sounds/gameWin.wav')
 
 # initialize joysticks
 pygame.joystick.init()
@@ -300,6 +305,7 @@ class GameScreen:
                 if (t1 - t0) >= 1:
                     spaceship.update_speed_status('down')
                     t0 = time.time()
+                    
 
             if event.type == INCREASE_SPEED:
                 if game_speed < MAX_SPEED:
@@ -384,7 +390,7 @@ class GameScreen:
         redraw_text()
 
     def game_over(self) -> None:
-        global playing, level, end
+        global playing, level, end, exeO
 
         # screen.fill(BLACK)
         display_star_background()
@@ -395,6 +401,12 @@ class GameScreen:
         screen.blit(text, ((WIDTH/2) - (text_width/2) + 50, HEIGHT - 200))
 
         pygame.display.flip()
+
+        #game over sound
+        exeO += 1
+        if exeO == 1:
+            h3 = mixer.Sound(gameOver_path)
+            h3.play()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -407,7 +419,7 @@ class GameScreen:
                     self.screen = 'intro'
 
     def game_finished(self) -> None:
-        global playing
+        global playing, exeF
 
         display_star_background()
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
@@ -417,6 +429,12 @@ class GameScreen:
         screen.blit(text, ((WIDTH/2) - (text_width/2), HEIGHT - 200))
 
         pygame.display.flip()
+
+        #game finished sound
+        exeF +=1
+        if exeF == 1:
+            h4 = mixer.Sound(gameWin_path)
+            h4.play()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

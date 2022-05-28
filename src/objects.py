@@ -1,9 +1,12 @@
 import pygame
 from images import *
 import random
+from pygame import mixer
+speedReduction_path = os.path.join(base_path, 'sounds/speedReduction.wav')
 
 
 class Spaceship(pygame.sprite.Sprite):
+    
     def __init__(self, width, height):
         self.shield_status = 2
         self.speed_status = 2
@@ -65,6 +68,9 @@ class Spaceship(pygame.sprite.Sprite):
             self.speed_status += 1
         elif react == 'down' and self.speed_status > 0:
             self.speed_status -= 1
+             #game over sound
+            h5 = mixer.Sound(speedReduction_path)
+            h5.play()
         self.update_image()
 
 
