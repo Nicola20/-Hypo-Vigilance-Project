@@ -2,7 +2,7 @@
 
 """
 ------------------------------------------------------------------------------------------------
- @authors       Nicola Lea Libera (117073), Laura Simon (), Chiranjeevi Janjanam()
+ @authors       Nicola Lea Libera (117073), Laura Simon (116992), Chiranjeevi Janjanam()
 ------------------------------------------------------------------------------------------------
  Description: This is the implementation of a little space game that detects if a player is
               pressing the buttons too hard and punishes him/her if this is the case.
@@ -54,6 +54,8 @@ counter_time = 0
 playing = True
 saved_data = False
 LEVEL_DURATION = 120000
+exeO = 0
+exeF = 0
 
 # Read arguments from console that decide which level is going to be played
 parser = argparse.ArgumentParser()
@@ -97,6 +99,9 @@ text_width, text_height = game_font.size('Press X to start new Game')
 intro_path = os.path.join(base_path, 'sounds/intro.wav')
 enemyHit_path = os.path.join(base_path, 'sounds/hit1.wav')
 energyHit_path = os.path.join(base_path, 'sounds/colectingEnergyball2.wav')
+gameOver_path = os.path.join(base_path, 'sounds/gameOver.wav')
+speedReduction_path = os.path.join(base_path, 'sounds/speedReduction.wav')
+gameWin_path = os.path.join(base_path, 'sounds/gameWin.wav')
 
 # initialize joysticks
 pygame.joystick.init()
@@ -446,6 +451,12 @@ class GameScreen:
 
         pygame.display.flip()
 
+         #game over sound
+        exeO += 1
+        if exeO == 1:
+            h3 = mixer.Sound(gameOver_path)
+            h3.play()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
@@ -475,6 +486,11 @@ class GameScreen:
         screen.blit(attribution, (WIDTH - attribution_width - 20, HEIGHT - 20))
 
         pygame.display.flip()
+         #game finished sound
+        exeF +=1
+        if exeF == 1:
+            h4 = mixer.Sound(gameWin_path)
+            h4.play()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

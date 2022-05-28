@@ -2,7 +2,7 @@
 
 """
 ------------------------------------------------------------------------------------------------
- @authors       Nicola Lea Libera (117073), Laura Simon (), Chiranjeevi Janjanam()
+ @authors       Nicola Lea Libera (117073), Laura Simon (116992), Chiranjeevi Janjanam()
 ------------------------------------------------------------------------------------------------
  Description: This is the implementation of a little space game that detects if a player is
               pressing the buttons too hard and punishes him/her if this is the case.
