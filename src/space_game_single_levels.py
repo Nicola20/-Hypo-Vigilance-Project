@@ -109,8 +109,8 @@ joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_coun
 
 
 # background sound
-mixer.music.load(intro_path)
-mixer.music.play(-1)
+h0 = mixer.Sound(intro_path)
+h0.play(-1)
 
 
 # mapping our range <-1,1> to <0,1>
@@ -434,7 +434,7 @@ class GameScreen:
         redraw_text()
 
     def game_over(self) -> None:
-        global playing, level
+        global playing, level,h0
 
         # screen.fill(BLACK)
         display_star_background()
@@ -454,6 +454,7 @@ class GameScreen:
          #game over sound
         exeO += 1
         if exeO == 1:
+            h0.stop()
             h3 = mixer.Sound(gameOver_path)
             h3.play()
 
@@ -471,7 +472,7 @@ class GameScreen:
                     pygame.quit()
 
     def game_finished(self) -> None:
-        global playing
+        global playing,h0
 
         display_star_background()
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
@@ -489,6 +490,7 @@ class GameScreen:
          #game finished sound
         exeF +=1
         if exeF == 1:
+            h0.stop()
             h4 = mixer.Sound(gameWin_path)
             h4.play()
 
