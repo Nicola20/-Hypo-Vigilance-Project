@@ -28,7 +28,7 @@ RED = (227, 65, 22)
 YELLOW = (243, 219, 13)
 NEW_OPPONENT = ['asteroid', 'cow']
 OPPONENT_WEIGHTS = [20, 1]
-BACKGROUND_SPEED = 5
+BACKGROUND_SPEED = 5.0
 FPS = 60
 MAX_PRESSURE = 0.7
 LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
@@ -36,9 +36,9 @@ LEVEL_LICENCE_LIST = [bronze_licence, silver_licence,
 RANKS = ["Bronze", "Silver", "Gold", "Diamond", "Platinum"]
 
 # Gerade speed-up by 10%
-SETTINGS = {0: {'speed': 2.0, 'enemies': 5}, 1: {'speed': 5.1, 'enemies': 8},
-            2: {'speed': 5.61, 'enemies': 9}, 3: {'speed': 6.17, 'enemies': 10},
-            4: {'speed': 6.79, 'enemies': 11}, 5: {'speed': 7.47, 'enemies': 12}}
+SETTINGS = {0: {'speed': 2.0, 'enemies': 5}, 1: {'speed': 5.2, 'enemies': 8},
+            2: {'speed': 5.72, 'enemies': 9}, 3: {'speed': 6.29, 'enemies': 10},
+            4: {'speed': 6.92, 'enemies': 11}, 5: {'speed': 7.61, 'enemies': 12}}
 
 
 level_licence = bronze_licence
@@ -68,6 +68,7 @@ file = args.output_file
 
 level = chosen_level
 game_speed = SETTINGS[chosen_level]['speed']
+print(game_speed)
 number_of_enemies = SETTINGS[chosen_level]['enemies']
 if level == 0:
     LEVEL_DURATION = 60000
@@ -241,7 +242,7 @@ def display_player_results():
     score_display = scoring_font.render("Basic:      " + str(basic_score), True, YELLOW)
     screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 130))
 
-    score_display = scoring_font.render("Bonus:     " + str(extra_score), True, YELLOW)
+    score_display = scoring_font.render("Bonus:    " + str(extra_score), True, YELLOW)
     screen.blit(score_display, ((WIDTH / 3) + 500, (HEIGHT / 2) + 170))
 
     score_display = scoring_font.render("Total:      " + str(extra_score + basic_score), True, YELLOW)
@@ -434,7 +435,7 @@ class GameScreen:
         redraw_text()
 
     def game_over(self) -> None:
-        global playing, level,h0
+        global playing, level, h0, exeO
 
         # screen.fill(BLACK)
         display_star_background()
@@ -472,7 +473,7 @@ class GameScreen:
                     pygame.quit()
 
     def game_finished(self) -> None:
-        global playing,h0
+        global playing, h0, exeF
 
         display_star_background()
         screen.blit(course_clear, ((WIDTH/2) - (game_name.get_width()/2) + 20, (HEIGHT/2) - 400))
