@@ -16,6 +16,7 @@ import random
 import json
 from images import *
 import time
+import datetime
 import objects as obj
 import argparse
 from pygame import mixer
@@ -75,7 +76,8 @@ if level == 0:
 else:
     level_licence = LEVEL_LICENCE_LIST[level - 1]
 
-user_stats = {'user_id': file, 'level': level, 'score': 0, 'time played in ms': 0, 'number of enemy hits': 0,
+user_stats = {'user_id': file, 'date': '', 'starting time': '', 'ending time': '',  'level': level, 'score': 0,
+              'time played in ms': 0, 'number of enemy hits': 0,
               'number of energy collections': 0, 'pressure penalties': 0, 'pressure': {}}
 
 # initialize game
@@ -170,6 +172,21 @@ def update_score_and_time(ms, scr):
     user_stats['time played in ms'] = ms
 
 
+def update_time(time_type):
+    global user_stats
+    t = datetime.datetime.now()
+    if time_type == 'start':
+        user_stats['starting time'] = t.strftime('%H:%M:%S')
+    else:
+        user_stats['ending time'] = t.strftime('%H:%M:%S')
+
+
+def set_date():
+    global user_stats
+    t = datetime.datetime.now()
+    user_stats['date'] = t.strftime('%d-%m-%y')
+
+
 def save_user_stats():
     global saved_data
     if not saved_data:
@@ -254,19 +271,21 @@ class GameScreen:
         self.screen = 'intro'
 
     def screen_manager(self):
-        #global t0
         global energy, enemy_group
         if self.screen == 'intro':
+            set_date()
+            update_time('start')
             self.intro_screen()
         elif self.screen == 'countdown':
-            #t0 = time.time()
             self.countdown_start()
         elif self.screen == 'game_screen':
             self.game_play()
         elif self.screen == 'game_over':
+            update_time('end')
             save_user_stats()
             self.game_over()
         elif self.screen == 'game_finished':
+            update_time('end')
             save_user_stats()
             self.game_finished()
 
