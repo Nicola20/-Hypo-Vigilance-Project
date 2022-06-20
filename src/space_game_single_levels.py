@@ -77,7 +77,7 @@ else:
     level_licence = LEVEL_LICENCE_LIST[level - 1]
 
 user_stats = {'user_id': file, 'date': '', 'starting time': '', 'ending time': '',  'level': level, 'score': 0,
-              'time played in ms': 0, 'number of enemy hits': 0,
+              'time played in ms': 0, 'ending': '', 'number of enemy hits': 0,
               'number of energy collections': 0, 'pressure penalties': 0, 'pressure': {}}
 
 # initialize game
@@ -187,6 +187,11 @@ def set_date():
     user_stats['date'] = t.strftime('%d-%m-%y')
 
 
+def set_ending_type(ending_type):
+    global user_stats
+    user_stats['ending'] = ending_type
+
+
 def save_user_stats():
     global saved_data
     if not saved_data:
@@ -282,10 +287,12 @@ class GameScreen:
             self.game_play()
         elif self.screen == 'game_over':
             update_time('end')
+            set_ending_type('game over')
             save_user_stats()
             self.game_over()
         elif self.screen == 'game_finished':
             update_time('end')
+            set_ending_type('course clear')
             save_user_stats()
             self.game_finished()
 
@@ -381,7 +388,8 @@ class GameScreen:
             # logic to decrease and increase the speed level
             t1 = time.time()
             if 0.0 < move_val < MAX_PRESSURE:
-                if (t1 - t0) >= 5:
+                # after 3 seconds remove the latest penalty and speed up the spaceship again
+                if (t1 - t0) >= 3:
                     spaceship.update_speed_status('up')
                     t0 = time.time()
             elif already_moved and move_val >= MAX_PRESSURE:
